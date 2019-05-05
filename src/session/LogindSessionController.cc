@@ -174,23 +174,21 @@ static QString findGreeterSessionPath()
 
     const LogindSessionList sessions = unbox<LogindSessionList>(reply);
     for (const LogindSession& session : sessions) {
-        QDBusMessage message = QDBusMessage::createMethodCall(
-            QStringLiteral("org.freedesktop.login1"),
-            session.path.path(),
-            QStringLiteral("org.freedesktop.DBus.Properties"),
-            QStringLiteral("Get"));
-        message.setArguments({ QStringLiteral("org.freedesktop.login1.Session"),
-            QStringLiteral("Class") });
+        const QString sessionPath = session.path.path();
 
-        const QDBusMessage reply = QDBusConnection::systemBus().call(message);
-        if (reply.type() == QDBusMessage::ErrorMessage)
+        const QDBusInterface sessionInterface(
+            QStringLiteral("org.freedesktop.login1"),
+            sessionPath,
+            QStringLiteral("org.freedesktop.login1.Session"),
+            QDBusConnection::systemBus());
+        if (!sessionInterface.isValid())
             continue;
 
-        const QString class_ = reply.arguments().first().toString();
+        const QString class_ = sessionInterface.property("Class").toString();
         if (class_ != QStringLiteral("greeter"))
             continue;
 
-        return session.path.path();
+        return sessionPath;
     }
 
     return QString();
