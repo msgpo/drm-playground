@@ -41,7 +41,7 @@ bool UdevMonitor::isValid() const
 
 void UdevMonitor::enable()
 {
-    if (m_enabled)
+    if (m_isEnabled)
         return;
 
     udev_monitor_enable_receiving(m_monitor);
@@ -50,28 +50,28 @@ void UdevMonitor::enable()
     QSocketNotifier* notifier = new QSocketNotifier(fd, QSocketNotifier::Read, this);
     connect(notifier, &QSocketNotifier::activated, this, &UdevMonitor::handleUdevEvents);
 
-    m_enabled = true;
+    m_isEnabled = true;
 }
 
-void UdevMonitor::filterBySubsystem(const QByteArray& subsystem)
+void UdevMonitor::filterBySubsystem(const QString& subsystem)
 {
     if (!m_monitor)
         return;
 
-    udev_monitor_filter_add_match_subsystem_devtype(m_monitor, subsystem, nullptr);
+    udev_monitor_filter_add_match_subsystem_devtype(m_monitor, subsystem.toUtf8(), nullptr);
 
-    if (m_enabled)
+    if (m_isEnabled)
         udev_monitor_filter_update(m_monitor);
 }
 
-void UdevMonitor::filterByTag(const QByteArray& tag)
+void UdevMonitor::filterByTag(const QString& tag)
 {
     if (!m_monitor)
         return;
 
-    udev_monitor_filter_add_match_tag(m_monitor, tag);
+    udev_monitor_filter_add_match_tag(m_monitor, tag.toUtf8());
 
-    if (m_enabled)
+    if (m_isEnabled)
         udev_monitor_filter_update(m_monitor);
 }
 
@@ -85,10 +85,10 @@ void UdevMonitor::handleUdevEvents()
     if (action.isNull())
         return;
 
-    if (action == "add")
+    if (action == QByteArrayLiteral("add"))
         emit deviceAdded(device);
-    else if (action == "remove")
+    else if (action == QByteArrayLiteral("remove"))
         emit deviceRemoved(device);
-    else if (action == "change")
+    else if (action == QByteArrayLiteral("change"))
         emit deviceChanged(device);
 }

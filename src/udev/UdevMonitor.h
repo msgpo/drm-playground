@@ -35,8 +35,8 @@ public:
 
     void enable();
 
-    void filterBySubsystem(const QByteArray& subsystem);
-    void filterByTag(const QByteArray& tag);
+    void filterBySubsystem(const QString& subsystem);
+    void filterByTag(const QString& tag);
 
 signals:
     void deviceAdded(const UdevDevice& device);
@@ -48,7 +48,7 @@ private:
 
     UdevContext m_context;
     udev_monitor* m_monitor;
-    bool m_enabled = false;
+    bool m_isEnabled = false;
 
     Q_DISABLE_COPY(UdevMonitor)
 };

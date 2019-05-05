@@ -36,12 +36,12 @@ static uint64_t queryCapability(int fd, uint32_t capability)
     return value;
 }
 
-DrmDevice::DrmDevice(NativeContext* context, const QByteArray& path, QObject* parent)
+DrmDevice::DrmDevice(NativeContext* context, const QString& path, QObject* parent)
     : QObject(parent)
     , m_context(context)
     , m_path(path)
 {
-    m_fd = m_context->sessionController()->openRestricted(path.constData());
+    m_fd = m_context->sessionController()->openRestricted(path);
     if (m_fd == -1)
         return;
 
@@ -103,7 +103,7 @@ int DrmDevice::fd() const
     return m_fd;
 }
 
-QByteArray DrmDevice::path() const
+QString DrmDevice::path() const
 {
     return m_path;
 }

@@ -53,18 +53,20 @@ public:
     Types types() const;
     UdevDevice parent() const;
 
-    QByteArray sysPath() const;
-    QByteArray sysName() const;
-    QByteArray sysNumber() const;
+    QString sysPath() const;
+    QString sysName() const;
+    QString sysNumber() const;
 
-    QByteArray devicePath() const;
-    QByteArray deviceNode() const;
+    QString devicePath() const;
+    QString deviceNode() const;
     dev_t deviceNumber() const;
 
-    QByteArray subsystem() const;
-    QByteArray driver() const;
+    QString subsystem() const;
+    QString driver() const;
 
-    QByteArray property(const QByteArray& name) const;
+    QString seat() const;
+
+    QByteArray property(const QString& name) const;
 
     operator udev_device*() const;
 

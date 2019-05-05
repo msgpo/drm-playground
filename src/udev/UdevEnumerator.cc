@@ -75,19 +75,19 @@ bool UdevEnumerator::isValid() const
     return m_enumerate;
 }
 
-void UdevEnumerator::matchSubsystem(const QByteArray& subsystem)
+void UdevEnumerator::matchSubsystem(const QString& subsystem)
 {
     if (m_enumerate)
-        udev_enumerate_add_match_subsystem(m_enumerate, subsystem);
+        udev_enumerate_add_match_subsystem(m_enumerate, subsystem.toUtf8());
 }
 
-void UdevEnumerator::matchSysname(const QByteArray& name)
+void UdevEnumerator::matchSysname(const QString& name)
 {
     if (m_enumerate)
-        udev_enumerate_add_match_sysname(m_enumerate, name);
+        udev_enumerate_add_match_sysname(m_enumerate, name.toUtf8());
 }
 
-void UdevEnumerator::matchSeat(const QByteArray& seat)
+void UdevEnumerator::matchSeat(const QString& seat)
 {
     m_seat = seat;
 }
@@ -109,11 +109,7 @@ QVector<UdevDevice> UdevEnumerator::scan() const
             QString::fromUtf8(udev_list_entry_get_name(it)));
         if (!device.isValid())
             continue;
-
-        QByteArray seat = device.property(QByteArrayLiteral("ID_SEAT"));
-        if (seat.isEmpty())
-            seat = QByteArrayLiteral("seat0");
-        if (seat != m_seat)
+        if (device.seat() != m_seat)
             continue;
 
         devices.append(device);

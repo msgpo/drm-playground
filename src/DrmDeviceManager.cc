@@ -19,6 +19,7 @@
 #include "DrmDeviceManager.h"
 #include "DrmDevice.h"
 #include "NativeContext.h"
+#include "session/SessionController.h"
 #include "udev/UdevContext.h"
 #include "udev/UdevDevice.h"
 #include "udev/UdevEnumerator.h"
@@ -31,16 +32,16 @@ DrmDeviceManager::DrmDeviceManager(NativeContext* context, QObject* parent)
     , m_context(context)
 {
     UdevEnumerator enumerator(*context->udev());
-    enumerator.matchSeat(QByteArrayLiteral("seat0"));
-    enumerator.matchSubsystem(QByteArrayLiteral("drm"));
-    enumerator.matchSysname(QByteArrayLiteral("card[0-9]*"));
+    enumerator.matchSeat(context->sessionController()->seat());
+    enumerator.matchSubsystem(QStringLiteral("drm"));
+    enumerator.matchSysname(QStringLiteral("card[0-9]*"));
 
     const QVector<UdevDevice> devices = enumerator.scan();
     for (const UdevDevice& device : devices) {
         if (!(device.types() & UdevDevice::PrimaryGpuType))
             continue;
 
-        const QByteArray path = device.deviceNode();
+        const QString path = device.deviceNode();
         if (path.isEmpty())
             continue;
 
@@ -67,7 +68,7 @@ DrmDeviceManager::DrmDeviceManager(NativeContext* context, QObject* parent)
         add(device);
 
     m_monitor = new UdevMonitor(context->udev(), this);
-    m_monitor->filterBySubsystem(QByteArrayLiteral("drm"));
+    m_monitor->filterBySubsystem(QStringLiteral("drm"));
     m_monitor->enable();
 
     connect(m_monitor, &UdevMonitor::deviceAdded, this, &DrmDeviceManager::add);
@@ -103,7 +104,7 @@ void DrmDeviceManager::add(const UdevDevice& device)
     if (device.types() & UdevDevice::PrimaryGpuType)
         return;
 
-    const QByteArray path = device.deviceNode();
+    const QString path = device.deviceNode();
     if (path.isEmpty())
         return;
 

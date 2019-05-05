@@ -38,14 +38,14 @@ public:
 
     bool isValid() const;
 
-    void matchSubsystem(const QByteArray& subsystem);
-    void matchSysname(const QByteArray& name);
-    void matchSeat(const QByteArray& seat);
+    void matchSubsystem(const QString& subsystem);
+    void matchSysname(const QString& name);
+    void matchSeat(const QString& seat);
 
     QVector<UdevDevice> scan() const;
 
 private:
     UdevContext m_context;
     udev_enumerate* m_enumerate;
-    QByteArray m_seat;
+    QString m_seat;
 };
