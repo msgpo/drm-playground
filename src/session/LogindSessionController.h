@@ -54,8 +54,8 @@ private:
     uint m_terminal = 0;
     QString m_sessionId;
     QString m_sessionPath;
-    bool m_active = false;
-    bool m_valid = false;
+    bool m_isActive = false;
+    bool m_isValid = false;
 
     Q_DISABLE_COPY(LogindSessionController)
 };

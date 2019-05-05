@@ -242,7 +242,7 @@ LogindSessionController::LogindSessionController(QObject* parent)
 
     m_terminal = sessionInterface.property("VTNr").toUInt();
     m_sessionId = sessionInterface.property("Id").toString();
-    m_active = sessionInterface.property("Active").toBool();
+    m_isActive = sessionInterface.property("Active").toBool();
 
     if (!activate())
         return;
@@ -266,23 +266,23 @@ LogindSessionController::LogindSessionController(QObject* parent)
         this,
         SLOT(slotPropertiesChanged(QString, QVariantMap)));
 
-    m_valid = true;
+    m_isValid = true;
 }
 
 LogindSessionController::~LogindSessionController()
 {
-    if (m_valid)
+    if (m_isValid)
         releaseControl();
 }
 
 bool LogindSessionController::isActive() const
 {
-    return m_active;
+    return m_isActive;
 }
 
 bool LogindSessionController::isValid() const
 {
-    return m_valid;
+    return m_isValid;
 }
 
 QString LogindSessionController::seat() const
@@ -423,10 +423,10 @@ void LogindSessionController::slotPropertiesChanged(const QString& interfaceName
         return;
 
     const bool active = sessionInterface.property("Active").toBool();
-    if (m_active == active)
+    if (m_isActive == active)
         return;
 
-    m_active = active;
+    m_isActive = active;
 
     emit activeChanged();
 }
