@@ -69,5 +69,5 @@ private:
     QByteArray m_serialNumber;
     int m_manufactureWeek;
     int m_manufactureYear;
-    bool m_valid = false;
+    bool m_isValid = false;
 };

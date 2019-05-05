@@ -247,12 +247,12 @@ EDID::EDID(const void* data, uint32_t size)
     m_serialNumber = parseSerialNumber(bytes);
     m_manufactureWeek = parseManufactureWeek(bytes);
     m_manufactureYear = parseManufactureYear(bytes);
-    m_valid = true;
+    m_isValid = true;
 }
 
 bool EDID::isValid() const
 {
-    return m_valid;
+    return m_isValid;
 }
 
 QByteArray EDID::monitorName() const
