@@ -26,9 +26,6 @@
 
 #include <xf86drm.h>
 
-#include <fcntl.h>
-#include <unistd.h>
-
 static uint64_t queryCapability(int fd, uint32_t capability)
 {
     uint64_t value = 0;
