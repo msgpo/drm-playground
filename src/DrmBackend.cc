@@ -32,6 +32,9 @@ DrmBackend::DrmBackend(QObject* parent)
 
 DrmBackend::~DrmBackend()
 {
+    // TODO: Maybe move DrmDeviceManager up to NativeContext?
+    delete m_deviceManager;
+    delete m_context;
 }
 
 bool DrmBackend::isValid() const
