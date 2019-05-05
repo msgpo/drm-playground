@@ -97,13 +97,13 @@ static QString findProcessSessionPath()
         QStringLiteral("/org/freedesktop/login1"),
         QStringLiteral("org.freedesktop.login1.Manager"),
         QStringLiteral("GetSessionByPID"));
-    message.setArguments({ QCoreApplication::applicationPid() });
+    message.setArguments({ uint32_t(QCoreApplication::applicationPid()) });
 
     const QDBusMessage reply = QDBusConnection::systemBus().call(message);
     if (reply.type() == QDBusMessage::ErrorMessage)
         return QString();
 
-    return reply.arguments().first().toString();
+    return reply.arguments().first().value<QDBusObjectPath>().path();
 }
 
 static bool isGraphicalSession(const QString& session)
@@ -357,11 +357,12 @@ void LogindSessionController::switchTo(int terminal)
 
 bool LogindSessionController::takeControl()
 {
-    const QDBusMessage message = QDBusMessage::createMethodCall(
+    QDBusMessage message = QDBusMessage::createMethodCall(
         QStringLiteral("org.freedesktop.login1"),
         m_sessionPath,
         QStringLiteral("org.freedesktop.login1.Session"),
         QStringLiteral("TakeControl"));
+    message.setArguments({ false });
 
     const QDBusMessage reply = QDBusConnection::systemBus().call(message);
 
