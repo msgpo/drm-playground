@@ -30,6 +30,7 @@ set(PLUGIN_INSTALL_DIR ${qt_plugins_dir} CACHE PATH "Absolute path to plugin ins
 
 find_package(Qt5 REQUIRED COMPONENTS
     Core
+    DBus
     Gui
 )
 

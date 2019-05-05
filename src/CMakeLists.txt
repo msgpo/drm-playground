@@ -1,4 +1,7 @@
 add_executable(playground
+    session/LogindSessionController.cc
+    session/SessionController.cc
+
     udev/UdevContext.cc
     udev/UdevDevice.cc
     udev/UdevEnumerator.cc
@@ -19,6 +22,7 @@ add_executable(playground
 
 target_link_libraries(playground
     Qt5::Core
+    Qt5::DBus
     Qt5::Gui
 
     gbm::gbm
