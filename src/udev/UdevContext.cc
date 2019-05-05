@@ -21,8 +21,6 @@
 
 #include <sys/stat.h>
 
-namespace Carbon {
-
 UdevContext::UdevContext()
     : m_udev(udev_new())
 {
@@ -117,5 +115,3 @@ UdevContext::operator udev*() const
 {
     return m_udev;
 }
-
-} // namespace Carbon

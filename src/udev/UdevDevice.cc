@@ -19,8 +19,6 @@
 #include "UdevDevice.h"
 #include "UdevContext.h"
 
-namespace Carbon {
-
 UdevDevice::UdevDevice()
     : m_device(nullptr)
 {
@@ -190,5 +188,3 @@ UdevDevice::operator udev_device*() const
 {
     return m_device;
 }
-
-} // namespace Carbon

@@ -16,7 +16,6 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include <QCommandLineParser>
 #include <QCoreApplication>
 
 #include "DrmBackend.h"
@@ -25,19 +24,8 @@ int main(int argc, char** argv)
 {
     QCoreApplication app(argc, argv);
 
-    QCommandLineParser parser;
-    parser.addHelpOption();
-
-    QCommandLineOption deviceOption(QStringLiteral("option"),
-        QString("Path to the DRM device"),
-        QStringLiteral("device"),
-        QStringLiteral("/dev/dri/card0"));
-    parser.addOption(deviceOption);
-
-    parser.process(app);
-
-    DrmBackend* backend = new DrmBackend(parser.value(deviceOption));
-    if (!backend->isValid())
+    DrmBackend backend;
+    if (!backend.isValid())
         return -1;
 
     return app.exec();

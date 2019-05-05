@@ -22,6 +22,9 @@
 
 #include <QObject>
 
+class UdevDevice;
+class UdevMonitor;
+
 class DrmDeviceManager : public QObject {
     Q_OBJECT
 
@@ -45,6 +48,12 @@ public:
     DrmDevice* primaryDevice() const;
 
 private:
+    void add(const UdevDevice& device);
+    void remove(const UdevDevice& device);
+    void reload(const UdevDevice& device);
+    DrmDevice* findDevice(const UdevDevice& device);
+
+    UdevMonitor* m_monitor;
     DrmDeviceList m_devices;
     DrmDevice* m_primaryDevice = nullptr;
 

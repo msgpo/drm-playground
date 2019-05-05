@@ -17,14 +17,66 @@
  */
 
 #include "DrmDeviceManager.h"
+#include "DrmDevice.h"
+#include "udev/UdevContext.h"
+#include "udev/UdevDevice.h"
+#include "udev/UdevEnumerator.h"
+#include "udev/UdevMonitor.h"
+
+#include <memory>
 
 DrmDeviceManager::DrmDeviceManager(QObject* parent)
     : QObject(parent)
 {
+    UdevContext context;
+    UdevEnumerator enumerator(context);
+    enumerator.matchSeat(QByteArrayLiteral("seat0"));
+    enumerator.matchSubsystem(QByteArrayLiteral("drm"));
+    enumerator.matchSysname(QByteArrayLiteral("card[0-9]*"));
+
+    const QVector<UdevDevice> devices = enumerator.scan();
+    for (const UdevDevice& device : devices) {
+        if (!(device.types() & UdevDevice::PrimaryGpuType))
+            continue;
+
+        const QByteArray path = device.deviceNode();
+        if (path.isEmpty())
+            continue;
+
+        auto dev = std::make_unique<DrmDevice>(path, this);
+        if (!dev->isValid())
+            continue;
+
+        if (!dev->enable(DrmDevice::ClientCapabilityAtomic))
+            continue;
+
+        dev->scanCrtcs();
+        dev->scanPlanes();
+        dev->scanConnectors();
+
+        m_devices << dev.release();
+    }
+
+    if (m_devices.isEmpty())
+        return;
+
+    m_primaryDevice = m_devices.last();
+
+    for (const UdevDevice& device : devices)
+        add(device);
+
+    m_monitor = new UdevMonitor(&context, this);
+    m_monitor->filterBySubsystem(QByteArrayLiteral("drm"));
+    m_monitor->enable();
+
+    connect(m_monitor, &UdevMonitor::deviceAdded, this, &DrmDeviceManager::add);
+    connect(m_monitor, &UdevMonitor::deviceRemoved, this, &DrmDeviceManager::remove);
+    connect(m_monitor, &UdevMonitor::deviceChanged, this, &DrmDeviceManager::reload);
 }
 
 DrmDeviceManager::~DrmDeviceManager()
 {
+    qDeleteAll(m_devices);
 }
 
 bool DrmDeviceManager::isValid() const
@@ -40,4 +92,67 @@ DrmDeviceList DrmDeviceManager::devices() const
 DrmDevice* DrmDeviceManager::primaryDevice() const
 {
     return m_primaryDevice;
+}
+
+void DrmDeviceManager::add(const UdevDevice& device)
+{
+    if (!(device.types() & UdevDevice::GpuType))
+        return;
+
+    if (device.types() & UdevDevice::PrimaryGpuType)
+        return;
+
+    const QByteArray path = device.deviceNode();
+    if (path.isEmpty())
+        return;
+
+    auto dev = std::make_unique<DrmDevice>(path, this);
+    if (!dev->isValid())
+        return;
+
+    if (!m_primaryDevice->supports(DrmDevice::DeviceCapabilityExportBuffer))
+        return;
+
+    if (!dev->supports(DrmDevice::DeviceCapabilityImportBuffer))
+        return;
+
+    if (!dev->enable(DrmDevice::ClientCapabilityAtomic))
+        return;
+
+    dev->scanCrtcs();
+    dev->scanPlanes();
+    dev->scanConnectors();
+
+    m_devices << dev.release();
+}
+
+void DrmDeviceManager::remove(const UdevDevice& device)
+{
+    if (!(device.types() & UdevDevice::GpuType))
+        return;
+
+    DrmDevice* dev = findDevice(device);
+    if (!dev)
+        return;
+
+    // TODO: Implement it.
+}
+
+void DrmDeviceManager::reload(const UdevDevice& device)
+{
+    if (!(device.types() & UdevDevice::GpuType))
+        return;
+
+    if (DrmDevice* dev = findDevice(device))
+        dev->scanConnectors();
+}
+
+DrmDevice* DrmDeviceManager::findDevice(const UdevDevice& udev)
+{
+    for (DrmDevice* device : m_devices) {
+        if (device->path() == udev.deviceNode())
+            return device;
+    }
+
+    return nullptr;
 }

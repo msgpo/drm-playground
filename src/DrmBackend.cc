@@ -17,12 +17,12 @@
  */
 
 #include "DrmBackend.h"
-#include "DrmDevice.h"
+#include "DrmDeviceManager.h"
 
-DrmBackend::DrmBackend(const QString& path, QObject* parent)
+DrmBackend::DrmBackend(QObject* parent)
     : QObject(parent)
+    , m_deviceManager(new DrmDeviceManager(this))
 {
-    m_device = new DrmDevice(path, this);
 }
 
 DrmBackend::~DrmBackend()
@@ -31,7 +31,7 @@ DrmBackend::~DrmBackend()
 
 bool DrmBackend::isValid() const
 {
-    if (!m_device || !m_device->isValid())
+    if (!m_deviceManager->isValid())
         return false;
     return true;
 }

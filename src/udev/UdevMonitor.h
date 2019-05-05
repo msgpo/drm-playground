@@ -24,8 +24,6 @@
 
 #include <libudev.h>
 
-namespace Carbon {
-
 class UdevMonitor : public QObject {
     Q_OBJECT
 
@@ -54,5 +52,3 @@ private:
 
     Q_DISABLE_COPY(UdevMonitor)
 };
-
-} // namespace Carbon

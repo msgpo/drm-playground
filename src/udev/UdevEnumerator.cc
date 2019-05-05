@@ -20,8 +20,6 @@
 #include "UdevContext.h"
 #include "UdevDevice.h"
 
-namespace Carbon {
-
 UdevEnumerator::UdevEnumerator(const UdevContext& context)
     : m_context(context)
     , m_enumerate(udev_enumerate_new(context))
@@ -123,5 +121,3 @@ QVector<UdevDevice> UdevEnumerator::scan() const
 
     return devices;
 }
-
-} // namespace Carbon

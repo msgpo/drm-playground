@@ -21,8 +21,6 @@
 
 #include <QSocketNotifier>
 
-namespace Carbon {
-
 UdevMonitor::UdevMonitor(UdevContext* context, QObject* parent)
     : QObject(parent)
     , m_context(*context)
@@ -94,5 +92,3 @@ void UdevMonitor::handleUdevEvents()
     else if (action == "change")
         emit deviceChanged(device);
 }
-
-} // namespace Carbon

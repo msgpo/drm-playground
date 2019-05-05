@@ -24,8 +24,6 @@
 
 #include <libudev.h>
 
-namespace Carbon {
-
 class UdevDevice;
 
 class UdevEnumerator {
@@ -51,5 +49,3 @@ private:
     udev_enumerate* m_enumerate;
     QByteArray m_seat;
 };
-
-} // namespace Carbon

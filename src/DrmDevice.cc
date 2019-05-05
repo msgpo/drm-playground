@@ -37,10 +37,11 @@ static uint64_t queryCapability(int fd, uint32_t capability)
     return value;
 }
 
-DrmDevice::DrmDevice(const QString& path, QObject* parent)
+DrmDevice::DrmDevice(const QByteArray& path, QObject* parent)
     : QObject(parent)
+    , m_path(path)
 {
-    m_fd = open(path.toUtf8().constData(), O_RDWR);
+    m_fd = open(path.constData(), O_RDWR);
     if (m_fd == -1)
         return;
 
@@ -100,6 +101,11 @@ bool DrmDevice::isValid() const
 int DrmDevice::fd() const
 {
     return m_fd;
+}
+
+QByteArray DrmDevice::path() const
+{
+    return m_path;
 }
 
 DrmConnectorList DrmDevice::connectors() const

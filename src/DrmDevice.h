@@ -26,7 +26,7 @@ class DrmDevice : public QObject {
     Q_OBJECT
 
 public:
-    DrmDevice(const QString& path, QObject* parent = nullptr);
+    DrmDevice(const QByteArray& path, QObject* parent = nullptr);
     ~DrmDevice() override;
 
     /**
@@ -87,6 +87,11 @@ public:
     int fd() const;
 
     /**
+     * Returns path of the corresponding drm device.
+     */
+    QByteArray path() const;
+
+    /**
      * Returns the list of available connectors on this device.
      */
     DrmConnectorList connectors() const;
@@ -133,11 +138,14 @@ private:
     DrmConnectorList m_connectors;
     DrmCrtcList m_crtcs;
     DrmPlaneList m_planes;
+    QByteArray m_path;
     int m_fd = -1;
     bool m_supportsExportBuffer = false;
     bool m_supportsImportBuffer = false;
     bool m_supportsBufferModifier = false;
     bool m_isValid = false;
+
+    friend class DrmDeviceManager;
 
     Q_DISABLE_COPY(DrmDevice)
 };

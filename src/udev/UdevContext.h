@@ -22,8 +22,6 @@
 
 #include <libudev.h>
 
-namespace Carbon {
-
 class UdevDevice;
 
 class UdevContext {
@@ -48,5 +46,3 @@ public:
 private:
     udev* m_udev;
 };
-
-} // namespace Carbon

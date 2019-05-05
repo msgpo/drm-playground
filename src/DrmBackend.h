@@ -22,11 +22,13 @@
 
 #include <QObject>
 
+class DrmDeviceManager;
+
 class DrmBackend : public QObject {
     Q_OBJECT
 
 public:
-    DrmBackend(const QString& path, QObject* parent = nullptr);
+    explicit DrmBackend(QObject* parent = nullptr);
     ~DrmBackend() override;
 
     /**
@@ -35,7 +37,7 @@ public:
     bool isValid() const;
 
 private:
-    DrmDevice* m_device;
+    DrmDeviceManager* m_deviceManager;
 
     Q_DISABLE_COPY(DrmBackend)
 };
