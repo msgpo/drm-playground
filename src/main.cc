@@ -17,6 +17,7 @@
  */
 
 #include <QCoreApplication>
+#include <QTimer>
 
 #include <csignal>
 
@@ -39,6 +40,9 @@ int main(int argc, char** argv)
     DrmBackend backend;
     if (!backend.isValid())
         return -1;
+
+    // Exit after 5 seconds.
+    QTimer::singleShot(5000, [] { QCoreApplication::exit(); });
 
     return app.exec();
 }
