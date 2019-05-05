@@ -18,10 +18,22 @@
 
 #include <QCoreApplication>
 
+#include <csignal>
+
 #include "DrmBackend.h"
+
+static void shutDown(int signum)
+{
+    Q_UNUSED(signum)
+    QCoreApplication::exit();
+}
 
 int main(int argc, char** argv)
 {
+    signal(SIGINT, shutDown);
+    signal(SIGTERM, shutDown);
+    signal(SIGHUP, shutDown);
+
     QCoreApplication app(argc, argv);
 
     DrmBackend backend;
