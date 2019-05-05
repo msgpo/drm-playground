@@ -34,11 +34,11 @@ DrmDeviceManager::DrmDeviceManager(NativeContext* context, QObject* parent)
     UdevEnumerator enumerator(*context->udev());
     enumerator.matchSeat(context->sessionController()->seat());
     enumerator.matchSubsystem(QStringLiteral("drm"));
-    enumerator.matchSysname(QStringLiteral("card[0-9]*"));
+    enumerator.matchSysfsName(QStringLiteral("card[0-9]*"));
 
     const QVector<UdevDevice> devices = enumerator.scan();
     for (const UdevDevice& device : devices) {
-        if (!(device.types() & UdevDevice::PrimaryGpuType))
+        if (!(device.types() & UdevDevice::PrimaryGpu))
             continue;
 
         const QString path = device.deviceNode();
@@ -98,10 +98,10 @@ DrmDevice* DrmDeviceManager::primaryDevice() const
 
 void DrmDeviceManager::add(const UdevDevice& device)
 {
-    if (!(device.types() & UdevDevice::GpuType))
+    if (!(device.types() & UdevDevice::Gpu))
         return;
 
-    if (device.types() & UdevDevice::PrimaryGpuType)
+    if (device.types() & UdevDevice::PrimaryGpu)
         return;
 
     const QString path = device.deviceNode();
@@ -130,7 +130,7 @@ void DrmDeviceManager::add(const UdevDevice& device)
 
 void DrmDeviceManager::remove(const UdevDevice& device)
 {
-    if (!(device.types() & UdevDevice::GpuType))
+    if (!(device.types() & UdevDevice::Gpu))
         return;
 
     DrmDevice* dev = findDevice(device);
@@ -142,7 +142,7 @@ void DrmDeviceManager::remove(const UdevDevice& device)
 
 void DrmDeviceManager::reload(const UdevDevice& device)
 {
-    if (!(device.types() & UdevDevice::GpuType))
+    if (!(device.types() & UdevDevice::Gpu))
         return;
 
     if (DrmDevice* dev = findDevice(device))

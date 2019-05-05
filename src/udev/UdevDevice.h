@@ -22,21 +22,12 @@
 
 #include <libudev.h>
 
-class UdevContext;
-class UdevMonitor;
-
 class UdevDevice {
 public:
     enum Type {
-        UnknownType = 0,
-        GpuType = 1 << 0,
-        PrimaryGpuType = 1 << 1,
-        KeyboardType = 1 << 2,
-        MouseType = 1 << 3,
-        TouchpadType = 1 << 4,
-        TabletType = 1 << 5,
-        TouchscreenType = 1 << 6,
-        JoystickType = 1 << 7
+        Unknown = 0,
+        Gpu = 1 << 0,
+        PrimaryGpu = 1 << 1,
     };
     Q_DECLARE_FLAGS(Types, Type)
 
@@ -53,18 +44,17 @@ public:
     Types types() const;
     UdevDevice parent() const;
 
-    QString sysPath() const;
-    QString sysName() const;
-    QString sysNumber() const;
+    QString sysfsPath() const;
+    QString sysfsName() const;
+    QString sysfsNumber() const;
 
     QString devicePath() const;
     QString deviceNode() const;
     dev_t deviceNumber() const;
 
-    QString subsystem() const;
     QString driver() const;
-
     QString seat() const;
+    QString subsystem() const;
 
     QByteArray property(const QString& name) const;
 

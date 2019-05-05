@@ -75,21 +75,21 @@ bool UdevEnumerator::isValid() const
     return m_enumerate;
 }
 
+void UdevEnumerator::matchSeat(const QString& seat)
+{
+    m_seat = seat;
+}
+
 void UdevEnumerator::matchSubsystem(const QString& subsystem)
 {
     if (m_enumerate)
         udev_enumerate_add_match_subsystem(m_enumerate, subsystem.toUtf8());
 }
 
-void UdevEnumerator::matchSysname(const QString& name)
+void UdevEnumerator::matchSysfsName(const QString& name)
 {
     if (m_enumerate)
         udev_enumerate_add_match_sysname(m_enumerate, name.toUtf8());
-}
-
-void UdevEnumerator::matchSeat(const QString& seat)
-{
-    m_seat = seat;
 }
 
 QVector<UdevDevice> UdevEnumerator::scan() const
@@ -105,8 +105,8 @@ QVector<UdevDevice> UdevEnumerator::scan() const
     for (auto it = udev_enumerate_get_list_entry(m_enumerate);
          it;
          it = udev_list_entry_get_next(it)) {
-        const UdevDevice device = m_context.deviceFromSysPath(
-            QString::fromUtf8(udev_list_entry_get_name(it)));
+        const QString sysfsPath = QString::fromUtf8(udev_list_entry_get_name(it));
+        const UdevDevice device = m_context.deviceFromSysfsPath(sysfsPath);
         if (!device.isValid())
             continue;
         if (device.seat() != m_seat)

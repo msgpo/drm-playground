@@ -39,7 +39,7 @@ public:
     UdevDevice deviceFromFileName(const QString& fileName) const;
     UdevDevice deviceFromId(const QString& id) const;
     UdevDevice deviceFromSubSystemAndName(const QString& subSystem, const QString& name) const;
-    UdevDevice deviceFromSysPath(const QString& path) const;
+    UdevDevice deviceFromSysfsPath(const QString& path) const;
 
     operator udev*() const;
 

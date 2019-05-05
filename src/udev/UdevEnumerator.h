@@ -22,10 +22,6 @@
 
 #include <QVector>
 
-#include <libudev.h>
-
-class UdevDevice;
-
 class UdevEnumerator {
 public:
     explicit UdevEnumerator(const UdevContext& context);
@@ -38,9 +34,9 @@ public:
 
     bool isValid() const;
 
-    void matchSubsystem(const QString& subsystem);
-    void matchSysname(const QString& name);
     void matchSeat(const QString& seat);
+    void matchSubsystem(const QString& subsystem);
+    void matchSysfsName(const QString& name);
 
     QVector<UdevDevice> scan() const;
 

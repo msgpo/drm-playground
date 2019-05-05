@@ -64,31 +64,20 @@ void UdevMonitor::filterBySubsystem(const QString& subsystem)
         udev_monitor_filter_update(m_monitor);
 }
 
-void UdevMonitor::filterByTag(const QString& tag)
-{
-    if (!m_monitor)
-        return;
-
-    udev_monitor_filter_add_match_tag(m_monitor, tag.toUtf8());
-
-    if (m_isEnabled)
-        udev_monitor_filter_update(m_monitor);
-}
-
 void UdevMonitor::handleUdevEvents()
 {
     UdevDevice device(udev_monitor_receive_device(m_monitor));
     if (!device.isValid())
         return;
 
-    const QByteArray action = udev_device_get_action(device);
-    if (action.isNull())
+    const char* action = udev_device_get_action(device);
+    if (!action)
         return;
 
-    if (action == QByteArrayLiteral("add"))
+    if (!qstrcmp(action, "add"))
         emit deviceAdded(device);
-    else if (action == QByteArrayLiteral("remove"))
+    else if (!qstrcmp(action, "remove"))
         emit deviceRemoved(device);
-    else if (action == QByteArrayLiteral("change"))
+    else if (!qstrcmp(action, "change"))
         emit deviceChanged(device);
 }

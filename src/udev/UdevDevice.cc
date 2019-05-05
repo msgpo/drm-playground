@@ -76,40 +76,17 @@ bool UdevDevice::isValid() const
 UdevDevice::Types UdevDevice::types() const
 {
     if (!m_device)
-        return UnknownType;
+        return Unknown;
 
-    Types types = {};
+    if (subsystem() != QLatin1String("drm"))
+        return Unknown;
 
-    if (subsystem() == "drm") {
-        types |= GpuType;
+    Types types = Gpu;
 
-        if (udev_device* pci = udev_device_get_parent_with_subsystem_devtype(m_device, "pci", nullptr)) {
-            if (qstrcmp(udev_device_get_sysattr_value(pci, "boot_vga"), "1") == 0) {
-                types |= PrimaryGpuType;
-            }
-        }
+    if (udev_device* pci = udev_device_get_parent_with_subsystem_devtype(m_device, "pci", nullptr)) {
+        if (qstrcmp(udev_device_get_sysattr_value(pci, "boot_vga"), "1") == 0)
+            types |= PrimaryGpu;
     }
-
-    if (property(QByteArrayLiteral("ID_INPUT_KEYBOARD")) == "1")
-        types |= KeyboardType;
-
-    if (property(QByteArrayLiteral("ID_INPUT_KEY")) == "1")
-        types |= KeyboardType;
-
-    if (property(QByteArrayLiteral("ID_INPUT_MOUSE")) == "1")
-        types |= MouseType;
-
-    if (property(QByteArrayLiteral("ID_INPUT_TOUCHPAD")) == "1")
-        types |= TouchpadType;
-
-    if (property(QByteArrayLiteral("ID_INPUT_TABLET")) == "1")
-        types |= TabletType;
-
-    if (property(QByteArrayLiteral("ID_INPUT_TOUCHSCREEN")) == "1")
-        types |= TouchscreenType;
-
-    if (property(QByteArrayLiteral("ID_INPUT_JOYSTICK")) == "1")
-        types |= JoystickType;
 
     return types;
 }
@@ -121,21 +98,21 @@ UdevDevice UdevDevice::parent() const
     return nullptr;
 }
 
-QString UdevDevice::sysPath() const
+QString UdevDevice::sysfsPath() const
 {
     if (m_device)
         return QString::fromUtf8(udev_device_get_syspath(m_device));
     return QString();
 }
 
-QString UdevDevice::sysName() const
+QString UdevDevice::sysfsName() const
 {
     if (m_device)
         return QString::fromUtf8(udev_device_get_sysname(m_device));
     return QString();
 }
 
-QString UdevDevice::sysNumber() const
+QString UdevDevice::sysfsNumber() const
 {
     if (m_device)
         return QString::fromUtf8(udev_device_get_sysnum(m_device));
@@ -163,13 +140,6 @@ dev_t UdevDevice::deviceNumber() const
     return -1;
 }
 
-QString UdevDevice::subsystem() const
-{
-    if (m_device)
-        return QString::fromUtf8(udev_device_get_subsystem(m_device));
-    return QString();
-}
-
 QString UdevDevice::driver() const
 {
     if (m_device)
@@ -187,6 +157,13 @@ QString UdevDevice::seat() const
         return QStringLiteral("seat0");
 
     return seat;
+}
+
+QString UdevDevice::subsystem() const
+{
+    if (m_device)
+        return QString::fromUtf8(udev_device_get_subsystem(m_device));
+    return QString();
 }
 
 QByteArray UdevDevice::property(const QString& name) const

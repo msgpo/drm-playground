@@ -22,8 +22,6 @@
 
 #include <QObject>
 
-#include <libudev.h>
-
 class UdevMonitor : public QObject {
     Q_OBJECT
 
@@ -36,7 +34,6 @@ public:
     void enable();
 
     void filterBySubsystem(const QString& subsystem);
-    void filterByTag(const QString& tag);
 
 signals:
     void deviceAdded(const UdevDevice& device);

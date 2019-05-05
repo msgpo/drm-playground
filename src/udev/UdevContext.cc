@@ -104,7 +104,7 @@ UdevDevice UdevContext::deviceFromSubSystemAndName(const QString& subSystem, con
     return nullptr;
 }
 
-UdevDevice UdevContext::deviceFromSysPath(const QString& path) const
+UdevDevice UdevContext::deviceFromSysfsPath(const QString& path) const
 {
     if (m_udev)
         return udev_device_new_from_syspath(m_udev, path.toUtf8());
