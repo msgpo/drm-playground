@@ -22,6 +22,7 @@
 
 #include <QObject>
 
+class NativeContext;
 class UdevDevice;
 class UdevMonitor;
 
@@ -29,7 +30,7 @@ class DrmDeviceManager : public QObject {
     Q_OBJECT
 
 public:
-    explicit DrmDeviceManager(QObject* parent = nullptr);
+    explicit DrmDeviceManager(NativeContext* context, QObject* parent = nullptr);
     ~DrmDeviceManager() override;
 
     /**
@@ -53,6 +54,7 @@ private:
     void reload(const UdevDevice& device);
     DrmDevice* findDevice(const UdevDevice& device);
 
+    NativeContext* m_context;
     UdevMonitor* m_monitor;
     DrmDeviceList m_devices;
     DrmDevice* m_primaryDevice = nullptr;

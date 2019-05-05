@@ -16,29 +16,40 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "DrmBackend.h"
-#include "DrmDeviceManager.h"
-#include "NativeContext.h"
+#pragma once
 
-DrmBackend::DrmBackend(QObject* parent)
-    : QObject(parent)
-{
-    m_context = new NativeContext(this);
-    if (!m_context->isValid())
-        return;
+#include <QObject>
 
-    m_deviceManager = new DrmDeviceManager(m_context, this);
-}
+#include <memory>
 
-DrmBackend::~DrmBackend()
-{
-}
+class SessionController;
+class UdevContext;
 
-bool DrmBackend::isValid() const
-{
-    if (!m_context->isValid())
-        return false;
-    if (!m_deviceManager->isValid())
-        return false;
-    return true;
-}
+class NativeContext : public QObject {
+    Q_OBJECT
+
+public:
+    explicit NativeContext(QObject* parent = nullptr);
+    ~NativeContext() override;
+
+    /**
+     * Whether this context is valid.
+     */
+    bool isValid() const;
+
+    /**
+     * Returns the session controller.
+     */
+    SessionController* sessionController() const;
+
+    /**
+     * Returns the udev context.
+     */
+    UdevContext* udev() const;
+
+private:
+    SessionController* m_sessionController = nullptr;
+    std::unique_ptr<UdevContext> m_udev;
+
+    Q_DISABLE_COPY(NativeContext)
+};

@@ -21,6 +21,8 @@
 #include "DrmCrtc.h"
 #include "DrmPlane.h"
 #include "DrmPointer.h"
+#include "NativeContext.h"
+#include "session/SessionController.h"
 
 #include <xf86drm.h>
 
@@ -37,11 +39,12 @@ static uint64_t queryCapability(int fd, uint32_t capability)
     return value;
 }
 
-DrmDevice::DrmDevice(const QByteArray& path, QObject* parent)
+DrmDevice::DrmDevice(NativeContext* context, const QByteArray& path, QObject* parent)
     : QObject(parent)
+    , m_context(context)
     , m_path(path)
 {
-    m_fd = open(path.constData(), O_RDWR);
+    m_fd = m_context->sessionController()->openRestricted(path.constData());
     if (m_fd == -1)
         return;
 
@@ -64,7 +67,7 @@ DrmDevice::~DrmDevice()
     qDeleteAll(m_connectors);
 
     if (m_fd != -1)
-        close(m_fd);
+        m_context->sessionController()->closeRestricted(m_fd);
 }
 
 bool DrmDevice::supports(DeviceCapability capability) const

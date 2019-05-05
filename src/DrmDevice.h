@@ -22,11 +22,13 @@
 
 #include <QObject>
 
+class NativeContext;
+
 class DrmDevice : public QObject {
     Q_OBJECT
 
 public:
-    DrmDevice(const QByteArray& path, QObject* parent = nullptr);
+    DrmDevice(NativeContext* context, const QByteArray& path, QObject* parent);
     ~DrmDevice() override;
 
     /**
@@ -135,6 +137,7 @@ private:
     void scanCrtcs();
     void scanPlanes();
 
+    NativeContext* m_context;
     DrmConnectorList m_connectors;
     DrmCrtcList m_crtcs;
     DrmPlaneList m_planes;

@@ -16,29 +16,41 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "DrmBackend.h"
-#include "DrmDeviceManager.h"
 #include "NativeContext.h"
+#include "session/LogindSessionController.h"
+#include "udev/UdevContext.h"
 
-DrmBackend::DrmBackend(QObject* parent)
+NativeContext::NativeContext(QObject* parent)
     : QObject(parent)
 {
-    m_context = new NativeContext(this);
-    if (!m_context->isValid())
+    m_udev = std::make_unique<UdevContext>();
+    if (!m_udev->isValid())
         return;
 
-    m_deviceManager = new DrmDeviceManager(m_context, this);
+    m_sessionController = new LogindSessionController(this);
+    if (!m_sessionController->isValid())
+        return;
 }
 
-DrmBackend::~DrmBackend()
+NativeContext::~NativeContext()
 {
 }
 
-bool DrmBackend::isValid() const
+bool NativeContext::isValid() const
 {
-    if (!m_context->isValid())
+    if (!m_udev || !m_udev->isValid())
         return false;
-    if (!m_deviceManager->isValid())
+    if (!m_sessionController || !m_sessionController->isValid())
         return false;
     return true;
+}
+
+SessionController* NativeContext::sessionController() const
+{
+    return m_sessionController;
+}
+
+UdevContext* NativeContext::udev() const
+{
+    return m_udev.get();
 }

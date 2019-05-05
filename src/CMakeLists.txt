@@ -17,6 +17,7 @@ add_executable(playground
     DrmObject.cc
     DrmPlane.cc
     EDID.cc
+    NativeContext.cc
     main.cc
 )
 

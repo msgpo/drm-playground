@@ -18,6 +18,7 @@
 
 #include "DrmDeviceManager.h"
 #include "DrmDevice.h"
+#include "NativeContext.h"
 #include "udev/UdevContext.h"
 #include "udev/UdevDevice.h"
 #include "udev/UdevEnumerator.h"
@@ -25,11 +26,11 @@
 
 #include <memory>
 
-DrmDeviceManager::DrmDeviceManager(QObject* parent)
+DrmDeviceManager::DrmDeviceManager(NativeContext* context, QObject* parent)
     : QObject(parent)
+    , m_context(context)
 {
-    UdevContext context;
-    UdevEnumerator enumerator(context);
+    UdevEnumerator enumerator(*context->udev());
     enumerator.matchSeat(QByteArrayLiteral("seat0"));
     enumerator.matchSubsystem(QByteArrayLiteral("drm"));
     enumerator.matchSysname(QByteArrayLiteral("card[0-9]*"));
@@ -43,7 +44,7 @@ DrmDeviceManager::DrmDeviceManager(QObject* parent)
         if (path.isEmpty())
             continue;
 
-        auto dev = std::make_unique<DrmDevice>(path, this);
+        auto dev = std::make_unique<DrmDevice>(m_context, path, this);
         if (!dev->isValid())
             continue;
 
@@ -65,7 +66,7 @@ DrmDeviceManager::DrmDeviceManager(QObject* parent)
     for (const UdevDevice& device : devices)
         add(device);
 
-    m_monitor = new UdevMonitor(&context, this);
+    m_monitor = new UdevMonitor(context->udev(), this);
     m_monitor->filterBySubsystem(QByteArrayLiteral("drm"));
     m_monitor->enable();
 
@@ -106,7 +107,7 @@ void DrmDeviceManager::add(const UdevDevice& device)
     if (path.isEmpty())
         return;
 
-    auto dev = std::make_unique<DrmDevice>(path, this);
+    auto dev = std::make_unique<DrmDevice>(m_context, path, this);
     if (!dev->isValid())
         return;
 
