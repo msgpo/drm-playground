@@ -28,41 +28,59 @@ static QString makeConnectorName(const drmModeConnector* connector)
     switch (connector->connector_type) {
     case DRM_MODE_CONNECTOR_VGA:
         type = QStringLiteral("VGA");
+        break;
     case DRM_MODE_CONNECTOR_DVII:
         type = QStringLiteral("DVI-I");
+        break;
     case DRM_MODE_CONNECTOR_DVID:
         type = QStringLiteral("DVI-D");
+        break;
     case DRM_MODE_CONNECTOR_DVIA:
         type = QStringLiteral("DVI-A");
+        break;
     case DRM_MODE_CONNECTOR_Composite:
         type = QStringLiteral("Composite");
+        break;
     case DRM_MODE_CONNECTOR_SVIDEO:
         type = QStringLiteral("SVIDEO");
+        break;
     case DRM_MODE_CONNECTOR_LVDS:
         type = QStringLiteral("LVDS");
+        break;
     case DRM_MODE_CONNECTOR_Component:
         type = QStringLiteral("Component");
+        break;
     case DRM_MODE_CONNECTOR_9PinDIN:
         type = QStringLiteral("DIN");
+        break;
     case DRM_MODE_CONNECTOR_DisplayPort:
         type = QStringLiteral("DisplayPort");
+        break;
     case DRM_MODE_CONNECTOR_HDMIA:
         type = QStringLiteral("HDMI-A");
+        break;
     case DRM_MODE_CONNECTOR_HDMIB:
         type = QStringLiteral("HDMI-B");
+        break;
     case DRM_MODE_CONNECTOR_TV:
         type = QStringLiteral("TV");
+        break;
     case DRM_MODE_CONNECTOR_eDP:
         type = QStringLiteral("eDP");
+        break;
     case DRM_MODE_CONNECTOR_VIRTUAL:
         type = QStringLiteral("Virtual");
+        break;
     case DRM_MODE_CONNECTOR_DSI:
         type = QStringLiteral("DSI");
+        break;
     case DRM_MODE_CONNECTOR_DPI:
         type = QStringLiteral("DPI");
+        break;
     case DRM_MODE_CONNECTOR_Unknown:
     default:
         type = QStringLiteral("Unknown");
+        break;
     }
 
     const QString id = QString::number(connector->connector_type_id);
@@ -70,12 +88,12 @@ static QString makeConnectorName(const drmModeConnector* connector)
     return type + QLatin1Char('-') + id;
 }
 
-static bool extractOnlineStatus(const drmModeConnector* connector)
+static bool checkOnlineStatus(const drmModeConnector* connector)
 {
     return connector->connection == DRM_MODE_CONNECTED;
 }
 
-static std::unique_ptr<EDID> extractEDID(int fd, uint32_t blobId)
+static std::unique_ptr<EDID> parseEDID(int fd, uint32_t blobId)
 {
     DrmScopedPointer<drmModePropertyBlobRes> blob(drmModeGetPropertyBlob(fd, blobId));
     if (!blob)
@@ -103,15 +121,19 @@ static DrmCrtcList findPossibleCrtcs(DrmDevice* device, const drmModeConnector* 
     return device->findCrtcs(mask);
 }
 
-static DrmModeList extractModes(const drmModeConnector* connector)
+static DrmCrtc* findCrtc(DrmDevice* device, const drmModeConnector* connector)
 {
-    DrmModeList modes;
-    modes.reserve(connector->count_modes);
+    const int fd = device->fd();
+    const uint32_t encoderId = connector->encoder_id;
 
-    for (int i = 0; i < connector->count_modes; ++i)
-        modes << DrmMode(connector->modes[i]);
+    if (!encoderId)
+        return nullptr;
 
-    return modes;
+    DrmScopedPointer<drmModeEncoder> encoder(drmModeGetEncoder(fd, encoderId));
+    if (!encoder)
+        return nullptr;
+
+    return device->findCrtc(encoder->crtc_id);
 }
 
 DrmConnector::DrmConnector(DrmDevice* device, uint32_t id)
@@ -124,7 +146,7 @@ DrmConnector::DrmConnector(DrmDevice* device, uint32_t id)
         return;
 
     m_name = makeConnectorName(connector.get());
-    m_isOnline = extractOnlineStatus(connector.get());
+    m_isOnline = checkOnlineStatus(connector.get());
     if (!m_isOnline)
         return;
 
@@ -138,19 +160,16 @@ DrmConnector::DrmConnector(DrmDevice* device, uint32_t id)
             return;
         }
         if (property->name == QByteArrayLiteral("EDID")) {
-            m_edid = extractEDID(device->fd(), uint32_t(value));
+            m_edid = parseEDID(fd, uint32_t(value));
             return;
         }
     });
 
-    m_modes = extractModes(connector.get());
-
-    const uint32_t encoderId = connector->encoder_id;
-    DrmScopedPointer<drmModeEncoder> encoder(drmModeGetEncoder(fd, encoderId));
-    if (encoder)
-        m_crtc = device->findCrtc(encoder->crtc_id);
-
     m_possibleCrtcs = findPossibleCrtcs(device, connector.get());
+    m_crtc = findCrtc(device, connector.get());
+
+    for (int i = 0; i < connector->count_modes; ++i)
+        m_modes << connector->modes[i];
 }
 
 DrmConnector::~DrmConnector()

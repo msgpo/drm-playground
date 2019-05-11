@@ -55,7 +55,7 @@ private:
     DrmDevice* findDevice(const UdevDevice& device);
 
     NativeContext* m_context;
-    UdevMonitor* m_monitor;
+    UdevMonitor* m_monitor = nullptr;
     DrmDeviceList m_devices;
     DrmDevice* m_primaryDevice = nullptr;
 

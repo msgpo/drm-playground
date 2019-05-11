@@ -16,47 +16,23 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#pragma once
+#include "NativeOutput.h"
 
-#include <cstdint>
-#include <cstdlib>
+NativeOutput::NativeOutput(QObject* parent)
+    : QObject(parent)
+{
+}
 
-#include <xf86drmMode.h>
+NativeOutput::~NativeOutput()
+{
+}
 
-class DrmMode {
-public:
-    explicit DrmMode();
-    DrmMode(const drmModeModeInfo& mode);
+DrmConnector* NativeOutput::connector() const
+{
+    return m_connector;
+}
 
-    /**
-     * Whether this mode is preferred.
-     */
-    bool isPreferred() const;
-
-    /**
-     * Returns the width.
-     */
-    uint32_t width() const;
-
-    /**
-     * Returns the height.
-     */
-    uint32_t height() const;
-
-    /**
-     * Returns the refresh rate, in MHz.
-     */
-    uint32_t refreshRate() const;
-
-    /**
-     * Returns the raw drm mode info.
-     */
-    drmModeModeInfo data() const;
-
-private:
-    bool m_preferred = false;
-    uint32_t m_width = 0;
-    uint32_t m_height = 0;
-    uint32_t m_refreshRate = 0;
-    drmModeModeInfo m_data;
-};
+DrmCrtc* NativeOutput::crtc() const
+{
+    return m_crtc;
+}

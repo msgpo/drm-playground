@@ -28,17 +28,17 @@ public:
     ~DrmPlane() override;
 
     /**
-     * Returns the type of this plane, i.e. whether this primary plane, etc.
+     * Returns the type of this plane.
      */
     PlaneType type() const;
 
     /**
-     * Returns CRTC that currently consumes this plane.
+     * Returns CRTC that this plane is currently attached to.
      */
     DrmCrtc* crtc() const;
 
     /**
-     * Returns a list of possible CRTCs this plane can be used with.
+     * Returns a list of possible CRTCs this plane can be attached to.
      */
     DrmCrtcList possibleCrtcs() const;
 
@@ -54,8 +54,8 @@ public:
 
 private:
     PlaneType m_type;
-    DrmCrtc* m_crtc;
     DrmCrtcList m_possibleCrtcs;
+    DrmCrtc* m_crtc;
 
     QVector<uint32_t> m_formats;
     QVector<drm_format_modifier> m_modifiers;
@@ -63,15 +63,15 @@ private:
     struct {
         uint32_t crtcX = 0;
         uint32_t crtcY = 0;
-        uint32_t crtcW = 0;
-        uint32_t crtcH = 0;
+        uint32_t crtcWidth = 0;
+        uint32_t crtcHeight = 0;
 
         uint32_t crtcId = 0;
-        uint32_t fbId = 0;
+        uint32_t frameBufferId = 0;
 
         uint32_t srcX = 0;
         uint32_t srcY = 0;
-        uint32_t srcW = 0;
-        uint32_t srcH = 0;
+        uint32_t srcWidth = 0;
+        uint32_t srcHeight = 0;
     } m_properties;
 };

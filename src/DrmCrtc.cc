@@ -29,12 +29,14 @@ DrmCrtc::DrmCrtc(DrmDevice* device, uint32_t id, uint32_t index)
             return;
         }
         if (property->name == QByteArrayLiteral("DEGAMMA_LUT")) {
+            m_properties.degammaTable = property->prop_id;
             return;
         }
         if (property->name == QByteArrayLiteral("DEGAMMA_LUT_SIZE")) {
             return;
         }
         if (property->name == QByteArrayLiteral("GAMMA_LUT")) {
+            m_properties.gammaTable = property->prop_id;
             return;
         }
         if (property->name == QByteArrayLiteral("GAMMA_LUT_SIZE")) {
@@ -44,11 +46,42 @@ DrmCrtc::DrmCrtc(DrmDevice* device, uint32_t id, uint32_t index)
             m_properties.modeId = property->prop_id;
             return;
         }
+        if (property->name == QByteArrayLiteral("rotation")) {
+            m_properties.rotation = property->prop_id;
+            return;
+        }
     });
 }
 
 DrmCrtc::~DrmCrtc()
 {
+}
+
+bool DrmCrtc::supports(Capability capability) const
+{
+    switch (capability) {
+    case CapabilityGamma:
+        return m_properties.gammaTable && m_properties.degammaTable;
+    case CapabilityRotation:
+        return m_properties.rotation;
+    }
+
+    Q_UNREACHABLE();
+}
+
+DrmMode DrmCrtc::mode() const
+{
+    return m_mode;
+}
+
+DrmPlane* DrmCrtc::primaryPlane() const
+{
+    return m_primaryPlane;
+}
+
+DrmPlane* DrmCrtc::cursorPlane() const
+{
+    return m_cursorPlane;
 }
 
 uint32_t DrmCrtc::index() const

@@ -18,45 +18,36 @@
 
 #pragma once
 
-#include <cstdint>
-#include <cstdlib>
+#include "globals.h"
 
-#include <xf86drmMode.h>
+#include <QObject>
 
-class DrmMode {
+class NativeOutput;
+
+class NativeRenderer : public QObject {
+    Q_OBJECT
+
 public:
-    explicit DrmMode();
-    DrmMode(const drmModeModeInfo& mode);
+    explicit NativeRenderer(DrmDevice* device, QObject* parent = nullptr);
+    ~NativeRenderer() override;
 
     /**
-     * Whether this mode is preferred.
+     * Whether this renderer was initiliazed successfully.
      */
-    bool isPreferred() const;
+    bool isValid() const;
 
     /**
-     * Returns the width.
+     * Marks the beginning of rendering of a frame.
      */
-    uint32_t width() const;
+    void beginFrame(NativeOutput* output);
 
     /**
-     * Returns the height.
+     * Finalizes the rendering of the frame.
      */
-    uint32_t height() const;
-
-    /**
-     * Returns the refresh rate, in MHz.
-     */
-    uint32_t refreshRate() const;
-
-    /**
-     * Returns the raw drm mode info.
-     */
-    drmModeModeInfo data() const;
+    void finishFrame(NativeOutput* output, const QRegion& damaged);
 
 private:
-    bool m_preferred = false;
-    uint32_t m_width = 0;
-    uint32_t m_height = 0;
-    uint32_t m_refreshRate = 0;
-    drmModeModeInfo m_data;
+    DrmDevice* m_device;
+
+    Q_DISABLE_COPY(NativeRenderer)
 };

@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "DrmMode.h"
 #include "DrmObject.h"
 
 class DrmCrtc : public DrmObject {
@@ -25,17 +26,54 @@ public:
     DrmCrtc(DrmDevice* device, uint32_t id, uint32_t index);
     ~DrmCrtc() override;
 
+    /**
+     * This enum type is used to specify capabilities of CRTCs.
+     */
+    enum Capability {
+        CapabilityGamma,
+        CapabilityRotation
+    };
+
+    /**
+     * Whether this CRTC supports the given @p capability.
+     */
+    bool supports(Capability capability) const;
+
+    /**
+     * Returns the current display mode.
+     */
+    DrmMode mode() const;
+
+    /**
+     * Returns the primary plane.
+     */
+    DrmPlane* primaryPlane() const;
+
+    /**
+     * Returns the cursor plane.
+     *
+     * If there is no such a plane, @c null is returned.
+     */
+    DrmPlane* cursorPlane() const;
+
 private:
     /**
      * Returns index of this CRTC in drmModeRes array.
      */
     uint32_t index() const;
 
+    DrmMode m_mode;
+    DrmPlane* m_primaryPlane = nullptr;
+    DrmPlane* m_cursorPlane = nullptr;
     uint32_t m_index;
 
     struct {
         uint32_t active = 0;
         uint32_t modeId = 0;
+
+        uint32_t rotation = 0;
+        uint32_t degammaTable = 0;
+        uint32_t gammaTable = 0;
     } m_properties;
 
     friend class DrmDevice;

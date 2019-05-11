@@ -18,6 +18,8 @@ add_executable(playground
     DrmPlane.cc
     EDID.cc
     NativeContext.cc
+    NativeOutput.cc
+    NativeRenderer.cc
     main.cc
 )
 
@@ -26,9 +28,8 @@ target_link_libraries(playground
     Qt5::DBus
     Qt5::Gui
 
+    epoxy::epoxy
     gbm::gbm
     libdrm::libdrm
     libudev::libudev
-
-    ${epoxy_LIBRARY}
 )

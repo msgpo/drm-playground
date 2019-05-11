@@ -32,7 +32,7 @@ public:
     virtual ~DrmObject();
 
     /**
-     * Returns device to which this object belongs.
+     * Returns device this object belongs to.
      */
     DrmDevice* device() const;
 
@@ -48,7 +48,7 @@ public:
 
 protected:
     /**
-     * Applies the given function for each property that this object has.
+     * Enumerates all properties that this object has.
      */
     void forEachProperty(std::function<void(const drmModePropertyPtr, uint64_t)> callback);
 

@@ -168,6 +168,11 @@ DrmPlaneList DrmDevice::planes(PlaneType type) const
     return planes;
 }
 
+NativeRenderer* DrmDevice::renderer() const
+{
+    return m_renderer;
+}
+
 void DrmDevice::scanConnectors()
 {
     DrmScopedPointer<drmModeRes> resources(drmModeGetResources(m_fd));
@@ -195,6 +200,8 @@ void DrmDevice::scanConnectors()
     qDeleteAll(gone);
 
     m_connectors = connectors;
+
+    emit connectorsChanged();
 }
 
 void DrmDevice::scanCrtcs()

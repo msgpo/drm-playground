@@ -35,6 +35,13 @@ typedef QList<DrmPlane*> DrmPlaneList;
 
 typedef QSet<DrmConnector*> DrmConnectorSet;
 
+enum Dpms {
+    DpmsOn,
+    DpmsStandby,
+    DpmsSuspend,
+    DpmsOff
+};
+
 enum PlaneType {
     PlanePrimary,
     PlaneOverlay,

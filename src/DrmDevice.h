@@ -23,6 +23,7 @@
 #include <QObject>
 
 class NativeContext;
+class NativeRenderer;
 
 class DrmDevice : public QObject {
     Q_OBJECT
@@ -132,12 +133,24 @@ public:
      */
     DrmPlaneList planes(PlaneType type) const;
 
+    /**
+     * Returns the renderer.
+     **/
+    NativeRenderer* renderer() const;
+
+signals:
+    /**
+     * Emitted when a connector is connected or disconnected.
+     */
+    void connectorsChanged();
+
 private:
     void scanConnectors();
     void scanCrtcs();
     void scanPlanes();
 
     NativeContext* m_context;
+    NativeRenderer* m_renderer = nullptr;
     DrmConnectorList m_connectors;
     DrmCrtcList m_crtcs;
     DrmPlaneList m_planes;

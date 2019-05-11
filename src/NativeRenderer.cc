@@ -16,47 +16,31 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#pragma once
+#include "NativeRenderer.h"
+#include "DrmDevice.h"
 
-#include <cstdint>
-#include <cstdlib>
+NativeRenderer::NativeRenderer(DrmDevice* device, QObject* parent)
+    : QObject(parent)
+    , m_device(device)
+{
+}
 
-#include <xf86drmMode.h>
+NativeRenderer::~NativeRenderer()
+{
+}
 
-class DrmMode {
-public:
-    explicit DrmMode();
-    DrmMode(const drmModeModeInfo& mode);
+bool NativeRenderer::isValid() const
+{
+    return true;
+}
 
-    /**
-     * Whether this mode is preferred.
-     */
-    bool isPreferred() const;
+void NativeRenderer::beginFrame(NativeOutput* output)
+{
+    Q_UNUSED(output)
+}
 
-    /**
-     * Returns the width.
-     */
-    uint32_t width() const;
-
-    /**
-     * Returns the height.
-     */
-    uint32_t height() const;
-
-    /**
-     * Returns the refresh rate, in MHz.
-     */
-    uint32_t refreshRate() const;
-
-    /**
-     * Returns the raw drm mode info.
-     */
-    drmModeModeInfo data() const;
-
-private:
-    bool m_preferred = false;
-    uint32_t m_width = 0;
-    uint32_t m_height = 0;
-    uint32_t m_refreshRate = 0;
-    drmModeModeInfo m_data;
-};
+void NativeRenderer::finishFrame(NativeOutput* output, const QRegion& damaged)
+{
+    Q_UNUSED(output)
+    Q_UNUSED(damaged)
+}

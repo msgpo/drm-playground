@@ -37,6 +37,17 @@ static PlaneType findPlaneType(const drmModePropertyPtr property, uint64_t value
     Q_UNREACHABLE();
 }
 
+static QVector<uint32_t> parseFormats(const drmModePlane* plane)
+{
+    QVector<uint32_t> formats;
+    formats.reserve(plane->count_formats);
+
+    for (uint32_t i = 0; i < plane->count_formats; ++i)
+        formats << plane->formats[i];
+
+    return formats;
+}
+
 static QVector<uint32_t> parseFormats(const uint8_t* data)
 {
     auto header = reinterpret_cast<const drm_format_modifier_blob*>(data);
@@ -68,7 +79,9 @@ static QVector<drm_format_modifier> parseModifiers(const uint8_t* data)
 DrmPlane::DrmPlane(DrmDevice* device, uint32_t id)
     : DrmObject(device, id, DRM_MODE_OBJECT_PLANE)
 {
-    DrmScopedPointer<drmModePlane> plane(drmModeGetPlane(device->fd(), id));
+    const int fd = device->fd();
+
+    DrmScopedPointer<drmModePlane> plane(drmModeGetPlane(fd, id));
     if (!plane)
         return;
 
@@ -82,11 +95,11 @@ DrmPlane::DrmPlane(DrmDevice* device, uint32_t id)
             return;
         }
         if (property->name == QByteArrayLiteral("CRTC_W")) {
-            m_properties.crtcW = property->prop_id;
+            m_properties.crtcWidth = property->prop_id;
             return;
         }
         if (property->name == QByteArrayLiteral("CRTC_H")) {
-            m_properties.crtcH = property->prop_id;
+            m_properties.crtcHeight = property->prop_id;
             return;
         }
         if (property->name == QByteArrayLiteral("CRTC_ID")) {
@@ -94,17 +107,16 @@ DrmPlane::DrmPlane(DrmDevice* device, uint32_t id)
             return;
         }
         if (property->name == QByteArrayLiteral("FB_ID")) {
-            m_properties.fbId = property->prop_id;
+            m_properties.frameBufferId = property->prop_id;
             return;
         }
         if (property->name == QByteArrayLiteral("IN_FORMATS")) {
-            const int fd = device->fd();
             const uint32_t id = uint32_t(value);
             DrmScopedPointer<drmModePropertyBlobRes> blob(drmModeGetPropertyBlob(fd, id));
             if (!blob)
                 return;
-            m_formats = parseFormats(static_cast<const uint8_t*>(blob->data));
-            m_modifiers = parseModifiers(static_cast<const uint8_t*>(blob->data));
+            m_formats = parseFormats(static_cast<uint8_t*>(blob->data));
+            m_modifiers = parseModifiers(static_cast<uint8_t*>(blob->data));
             return;
         }
         if (property->name == QByteArrayLiteral("SRC_X")) {
@@ -116,11 +128,11 @@ DrmPlane::DrmPlane(DrmDevice* device, uint32_t id)
             return;
         }
         if (property->name == QByteArrayLiteral("SRC_W")) {
-            m_properties.srcW = property->prop_id;
+            m_properties.srcWidth = property->prop_id;
             return;
         }
         if (property->name == QByteArrayLiteral("SRC_H")) {
-            m_properties.srcH = property->prop_id;
+            m_properties.srcHeight = property->prop_id;
             return;
         }
         if (property->name == QByteArrayLiteral("type")) {
@@ -129,14 +141,11 @@ DrmPlane::DrmPlane(DrmDevice* device, uint32_t id)
         }
     });
 
-    m_crtc = device->findCrtc(plane->crtc_id);
     m_possibleCrtcs = device->findCrtcs(plane->possible_crtcs);
+    m_crtc = device->findCrtc(plane->crtc_id);
 
-    if (m_formats.isEmpty()) {
-        m_formats.reserve(plane->count_formats);
-        for (uint32_t i = 0; i < plane->count_formats; ++i)
-            m_formats << plane->formats[i];
-    }
+    if (m_formats.isEmpty())
+        m_formats = parseFormats(plane.get());
 }
 
 DrmPlane::~DrmPlane()

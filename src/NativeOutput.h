@@ -18,45 +18,30 @@
 
 #pragma once
 
-#include <cstdint>
-#include <cstdlib>
+#include "globals.h"
 
-#include <xf86drmMode.h>
+#include <QObject>
 
-class DrmMode {
+class NativeOutput : public QObject {
+    Q_OBJECT
+
 public:
-    explicit DrmMode();
-    DrmMode(const drmModeModeInfo& mode);
+    explicit NativeOutput(QObject* parent = nullptr);
+    ~NativeOutput() override;
 
     /**
-     * Whether this mode is preferred.
+     * Returns associated connector object.
      */
-    bool isPreferred() const;
+    DrmConnector* connector() const;
 
     /**
-     * Returns the width.
+     * Returns a CRTC that drives this output.
      */
-    uint32_t width() const;
-
-    /**
-     * Returns the height.
-     */
-    uint32_t height() const;
-
-    /**
-     * Returns the refresh rate, in MHz.
-     */
-    uint32_t refreshRate() const;
-
-    /**
-     * Returns the raw drm mode info.
-     */
-    drmModeModeInfo data() const;
+    DrmCrtc* crtc() const;
 
 private:
-    bool m_preferred = false;
-    uint32_t m_width = 0;
-    uint32_t m_height = 0;
-    uint32_t m_refreshRate = 0;
-    drmModeModeInfo m_data;
+    DrmConnector* m_connector = nullptr;
+    DrmCrtc* m_crtc = nullptr;
+
+    Q_DISABLE_COPY(NativeOutput)
 };

@@ -63,8 +63,8 @@ public:
 
 private:
     DrmModeList m_modes;
-    DrmCrtc* m_crtc = nullptr;
     DrmCrtcList m_possibleCrtcs;
+    DrmCrtc* m_crtc = nullptr;
     std::unique_ptr<EDID> m_edid;
     QString m_name;
     bool m_isOnline = false;
