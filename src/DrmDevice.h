@@ -95,6 +95,11 @@ public:
     QString path() const;
 
     /**
+     * Returns the device memory allocator.
+     */
+    DrmAllocator* allocator() const;
+
+    /**
      * Returns the list of available connectors on this device.
      */
     DrmConnectorList connectors() const;
@@ -153,9 +158,11 @@ private:
     void scanConnectors();
     void scanCrtcs();
     void scanPlanes();
+    void reroute();
 
     NativeContext* m_context;
     NativeRenderer* m_renderer = nullptr;
+    DrmAllocator* m_allocator = nullptr;
     DrmConnectorList m_connectors;
     DrmCrtcList m_crtcs;
     DrmPlaneList m_planes;

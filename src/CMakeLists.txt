@@ -7,6 +7,7 @@ add_executable(playground
     udev/UdevEnumerator.cc
     udev/UdevMonitor.cc
 
+    DrmAllocator.cc
     DrmBackend.cc
     DrmBuffer.cc
     DrmConnector.cc

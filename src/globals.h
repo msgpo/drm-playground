@@ -19,8 +19,10 @@
 #pragma once
 
 #include <QList>
+#include <QMap>
 #include <QSet>
 
+class DrmAllocator;
 class DrmBuffer;
 class DrmConnector;
 class DrmCrtc;
@@ -38,6 +40,8 @@ typedef QList<DrmImage*> DrmImageList;
 typedef QList<DrmMode> DrmModeList;
 typedef QList<DrmOutput*> DrmOutputList;
 typedef QList<DrmPlane*> DrmPlaneList;
+
+typedef QMap<DrmConnector*, DrmCrtc*> DrmCrtcMap;
 
 typedef QSet<DrmConnector*> DrmConnectorSet;
 

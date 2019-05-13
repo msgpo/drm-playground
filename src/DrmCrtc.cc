@@ -18,9 +18,9 @@
 
 #include "DrmCrtc.h"
 
-DrmCrtc::DrmCrtc(DrmDevice* device, uint32_t id, uint32_t index)
+DrmCrtc::DrmCrtc(DrmDevice* device, uint32_t id, uint32_t pipe)
     : DrmObject(device, id, DRM_MODE_OBJECT_CRTC)
-    , m_index(index)
+    , m_pipe(pipe)
 {
     forEachProperty([this](const drmModePropertyPtr property, uint64_t value) {
         Q_UNUSED(value)
@@ -84,7 +84,7 @@ DrmPlane* DrmCrtc::cursorPlane() const
     return m_cursorPlane;
 }
 
-uint32_t DrmCrtc::index() const
+uint32_t DrmCrtc::pipe() const
 {
-    return m_index;
+    return m_pipe;
 }

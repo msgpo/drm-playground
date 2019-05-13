@@ -24,6 +24,8 @@
 #include "NativeContext.h"
 #include "session/SessionController.h"
 
+#include <QBitArray>
+
 #include <xf86drm.h>
 
 static uint64_t queryCapability(int fd, uint32_t capability)
@@ -109,6 +111,11 @@ QString DrmDevice::path() const
     return m_path;
 }
 
+DrmAllocator* DrmDevice::allocator() const
+{
+    return m_allocator;
+}
+
 DrmConnectorList DrmDevice::connectors() const
 {
     return m_connectors;
@@ -144,7 +151,7 @@ DrmCrtcList DrmDevice::findCrtcs(uint32_t mask) const
     DrmCrtcList crtcs;
 
     for (DrmCrtc* crtc : m_crtcs) {
-        if (!(mask & (1 << crtc->index())))
+        if (!(mask & (1 << crtc->pipe())))
             continue;
         crtcs << crtc;
     }
@@ -228,4 +235,73 @@ void DrmDevice::scanPlanes()
 
     for (uint32_t i = 0; i < resources->count_planes; ++i)
         m_planes << new DrmPlane(this, resources->planes[i]);
+}
+
+struct MatchContext {
+    DrmConnectorList connectors;
+    DrmCrtcList crtcs;
+    DrmCrtcMap configuration;
+    QBitArray taken;
+};
+
+static bool testConfiguration(const MatchContext& context)
+{
+    Q_UNUSED(context)
+    return false;
+}
+
+static bool findConfiguration(MatchContext& context, int depth = 0)
+{
+    if (context.connectors.count() == depth)
+        return testConfiguration(context);
+
+    DrmConnector* connector = context.connectors.at(depth);
+
+    for (DrmCrtc* crtc : context.crtcs) {
+        if (context.taken.testBit(crtc->pipe()))
+            continue;
+
+        context.configuration.insert(connector, crtc);
+        context.taken.setBit(crtc->pipe());
+
+        const bool found = findConfiguration(context, depth + 1);
+        if (found)
+            return true;
+
+        context.configuration.remove(connector);
+        context.taken.clearBit(crtc->pipe());
+    }
+
+    return false;
+}
+
+void DrmDevice::reroute()
+{
+    DrmConnectorList connectors = m_connectors;
+    DrmCrtcList crtcs = m_crtcs;
+
+    // Move connectors that have assigned CRTC to the front.
+    std::partition(connectors.begin(), connectors.end(),
+        [](const DrmConnector* connector) { return connector->crtc(); });
+
+    // Make sure that we prefer existing associations.
+    for (int i = 0; i < connectors.count(); ++i) {
+        const DrmConnector* connector = connectors.at(i);
+        if (!connector->crtc())
+            continue;
+
+        const int j = crtcs.indexOf(connector->crtc());
+        if (i == j)
+            continue;
+
+        std::swap(crtcs[i], crtcs[j]);
+    }
+
+    MatchContext context;
+    context.connectors = connectors;
+    context.crtcs = crtcs;
+    context.taken.resize(crtcs.count());
+
+    if (!findConfiguration(context))
+        return;
 }

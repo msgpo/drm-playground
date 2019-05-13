@@ -16,37 +16,41 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "DrmSwapchain.h"
 #include "DrmAllocator.h"
 #include "DrmDevice.h"
 #include "DrmImage.h"
 
-DrmSwapchain::DrmSwapchain(DrmDevice* device, uint32_t width, uint32_t height,
-    uint32_t format, const QVector<uint64_t>& modifiers)
+#include <QVector>
+
+DrmAllocator::DrmAllocator(DrmDevice* device, QObject* parent)
+    : QObject(parent)
+    , m_device(device)
+    , m_gbm(gbm_create_device(device->fd()))
 {
-    DrmAllocator* allocator = device->allocator();
-    for (int i = 0; i < 3; ++i)
-        m_images << allocator->allocate(width, height, format, modifiers);
 }
 
-DrmSwapchain::~DrmSwapchain()
+DrmAllocator::~DrmAllocator()
 {
-    qDeleteAll(m_images);
+    if (m_gbm)
+        gbm_device_destroy(m_gbm);
 }
 
-int DrmSwapchain::depth() const
+bool DrmAllocator::isValid() const
 {
-    return m_images.count();
+    return m_gbm;
 }
 
-DrmImage* DrmSwapchain::acquire()
+DrmImage* DrmAllocator::allocate(uint32_t width, uint32_t height, uint32_t format,
+    const QVector<uint64_t>& modifiers)
 {
-    for (DrmImage* image : m_images) {
-        if (image->isBusy())
-            continue;
-        image->setBusy(true);
-        return image;
-    }
+    // TODO: Without modifiers.
 
-    return nullptr;
+    gbm_bo* bo = nullptr;
+    if (!modifiers.isEmpty())
+        bo = gbm_bo_create_with_modifiers(m_gbm, width, height, format, modifiers.data(), modifiers.count());
+
+    if (!bo)
+        return nullptr;
+
+    return new DrmImage(m_device, bo);
 }

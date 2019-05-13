@@ -25,7 +25,8 @@
 
 class DrmSwapchain {
 public:
-    DrmSwapchain(const QSize& size, uint32_t format, const QVector<uint64_t>& modifiers);
+    DrmSwapchain(DrmDevice* device, uint32_t width, uint32_t height,
+        uint32_t format, const QVector<uint64_t>& modifiers);
     ~DrmSwapchain();
 
     /**

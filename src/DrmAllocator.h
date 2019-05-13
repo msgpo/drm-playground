@@ -16,37 +16,35 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "DrmSwapchain.h"
-#include "DrmAllocator.h"
-#include "DrmDevice.h"
-#include "DrmImage.h"
+#pragma once
 
-DrmSwapchain::DrmSwapchain(DrmDevice* device, uint32_t width, uint32_t height,
-    uint32_t format, const QVector<uint64_t>& modifiers)
-{
-    DrmAllocator* allocator = device->allocator();
-    for (int i = 0; i < 3; ++i)
-        m_images << allocator->allocate(width, height, format, modifiers);
-}
+#include "globals.h"
 
-DrmSwapchain::~DrmSwapchain()
-{
-    qDeleteAll(m_images);
-}
+#include <QObject>
 
-int DrmSwapchain::depth() const
-{
-    return m_images.count();
-}
+#include <gbm.h>
 
-DrmImage* DrmSwapchain::acquire()
-{
-    for (DrmImage* image : m_images) {
-        if (image->isBusy())
-            continue;
-        image->setBusy(true);
-        return image;
-    }
+class DrmAllocator : public QObject {
+    Q_OBJECT
 
-    return nullptr;
-}
+public:
+    explicit DrmAllocator(DrmDevice* device, QObject* parent = nullptr);
+    ~DrmAllocator();
+
+    /**
+     * Returns whether this allocator is valid.
+     */
+    bool isValid() const;
+
+    /**
+     * Allocates an image.
+     */
+    DrmImage* allocate(uint32_t width, uint32_t height, uint32_t format,
+        const QVector<uint64_t>& modifiers);
+
+private:
+    DrmDevice* m_device = nullptr;
+    gbm_device* m_gbm = nullptr;
+
+    Q_DISABLE_COPY(DrmAllocator)
+};

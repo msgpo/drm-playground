@@ -18,6 +18,7 @@
 
 #include "DrmOutput.h"
 #include "DrmConnector.h"
+#include "DrmCrtc.h"
 #include "DrmSwapchain.h"
 
 DrmOutput::DrmOutput(DrmConnector* connector, QObject* parent)
