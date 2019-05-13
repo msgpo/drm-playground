@@ -59,6 +59,7 @@ DrmDevice::DrmDevice(NativeContext* context, const QString& path, QObject* paren
 
 DrmDevice::~DrmDevice()
 {
+    qDeleteAll(m_outputs);
     qDeleteAll(m_planes);
     qDeleteAll(m_crtcs);
     qDeleteAll(m_connectors);
@@ -166,6 +167,11 @@ DrmPlaneList DrmDevice::planes(PlaneType type) const
     }
 
     return planes;
+}
+
+DrmOutputList DrmDevice::outputs() const
+{
+    return m_outputs;
 }
 
 NativeRenderer* DrmDevice::renderer() const

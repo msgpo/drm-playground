@@ -21,16 +21,22 @@
 #include <QList>
 #include <QSet>
 
+class DrmBuffer;
 class DrmConnector;
 class DrmCrtc;
 class DrmDevice;
+class DrmImage;
 class DrmMode;
+class DrmOutput;
 class DrmPlane;
+class DrmSwapchain;
 
 typedef QList<DrmConnector*> DrmConnectorList;
 typedef QList<DrmCrtc*> DrmCrtcList;
 typedef QList<DrmDevice*> DrmDeviceList;
+typedef QList<DrmImage*> DrmImageList;
 typedef QList<DrmMode> DrmModeList;
+typedef QList<DrmOutput*> DrmOutputList;
 typedef QList<DrmPlane*> DrmPlaneList;
 
 typedef QSet<DrmConnector*> DrmConnectorSet;

@@ -16,23 +16,38 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "NativeOutput.h"
+#include "DrmSwapchain.h"
+#include "DrmImage.h"
 
-NativeOutput::NativeOutput(QObject* parent)
-    : QObject(parent)
+DrmSwapchain::DrmSwapchain(const QSize& size, uint32_t format, const QVector<uint64_t>& modifiers)
 {
+    Q_UNUSED(size)
+    Q_UNUSED(format)
+    Q_UNUSED(modifiers)
+
+    // TODO: Actually create images.
+    for (int i = 0; i < 3; ++i)
+        ;
 }
 
-NativeOutput::~NativeOutput()
+DrmSwapchain::~DrmSwapchain()
 {
+    qDeleteAll(m_images);
 }
 
-DrmConnector* NativeOutput::connector() const
+int DrmSwapchain::depth() const
 {
-    return m_connector;
+    return m_images.count();
 }
 
-DrmCrtc* NativeOutput::crtc() const
+DrmImage* DrmSwapchain::acquire()
 {
-    return m_crtc;
+    for (DrmImage* image : m_images) {
+        if (image->isBusy())
+            continue;
+        image->setBusy(true);
+        return image;
+    }
+
+    return nullptr;
 }

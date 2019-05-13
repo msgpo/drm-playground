@@ -84,10 +84,10 @@ DrmBuffer* DrmBuffer::create(DrmDevice* device, uint32_t width, uint32_t height,
 {
     uint32_t id;
 
-    uint32_t flags = 0;
-    if (modifiers[0] != DRM_FORMAT_MOD_INVALID)
-        flags = DRM_MODE_FB_MODIFIERS;
+    if (modifiers[0] == DRM_FORMAT_MOD_INVALID)
+        return create(device, width, height, format, handles, pitches, offsets);
 
+    const uint32_t flags = DRM_MODE_FB_MODIFIERS;
     if (drmModeAddFB2WithModifiers(device->fd(), width, height, format,
             handles.data(), pitches.data(), offsets.data(), modifiers.data(),
             &id, flags))

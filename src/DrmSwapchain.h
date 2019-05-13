@@ -20,32 +20,24 @@
 
 #include "globals.h"
 
-#include <QObject>
+#include <QSize>
+#include <QVector>
 
-class NativeRenderer : public QObject {
-    Q_OBJECT
-
+class DrmSwapchain {
 public:
-    explicit NativeRenderer(DrmDevice* device, QObject* parent = nullptr);
-    ~NativeRenderer() override;
+    DrmSwapchain(const QSize& size, uint32_t format, const QVector<uint64_t>& modifiers);
+    ~DrmSwapchain();
 
     /**
-     * Whether this renderer was initiliazed successfully.
+     * Returns the number of images in this swapchain.
      */
-    bool isValid() const;
+    int depth() const;
 
     /**
-     * Marks the beginning of rendering of a frame.
+     * Acquires an image for rendering.
      */
-    void beginFrame(DrmOutput* output);
-
-    /**
-     * Finalizes the rendering of the frame.
-     */
-    void finishFrame(DrmOutput* output, const QRegion& damaged);
+    DrmImage* acquire();
 
 private:
-    DrmDevice* m_device;
-
-    Q_DISABLE_COPY(NativeRenderer)
+    DrmImageList m_images;
 };

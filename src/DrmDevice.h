@@ -134,6 +134,11 @@ public:
     DrmPlaneList planes(PlaneType type) const;
 
     /**
+     * Returns a list of outputs connected to this device.
+     */
+    DrmOutputList outputs() const;
+
+    /**
      * Returns the renderer.
      **/
     NativeRenderer* renderer() const;
@@ -154,6 +159,7 @@ private:
     DrmConnectorList m_connectors;
     DrmCrtcList m_crtcs;
     DrmPlaneList m_planes;
+    DrmOutputList m_outputs;
     QString m_path;
     int m_fd = -1;
     bool m_supportsExportBuffer = false;

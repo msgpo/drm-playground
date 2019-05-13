@@ -13,12 +13,14 @@ add_executable(playground
     DrmCrtc.cc
     DrmDevice.cc
     DrmDeviceManager.cc
+    DrmImage.cc
     DrmMode.cc
     DrmObject.cc
+    DrmOutput.cc
     DrmPlane.cc
+    DrmSwapchain.cc
     EDID.cc
     NativeContext.cc
-    NativeOutput.cc
     NativeRenderer.cc
     main.cc
 )

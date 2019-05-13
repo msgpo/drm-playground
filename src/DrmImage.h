@@ -20,28 +20,37 @@
 
 #include "globals.h"
 
-#include <QObject>
+#include <gbm.h>
 
-class NativeOutput : public QObject {
-    Q_OBJECT
-
+class DrmImage {
 public:
-    explicit NativeOutput(QObject* parent = nullptr);
-    ~NativeOutput() override;
+    DrmImage(DrmDevice* device, gbm_bo* bo);
+    ~DrmImage();
 
     /**
-     * Returns associated connector object.
+     * Returns whether this image is valid.
      */
-    DrmConnector* connector() const;
+    bool isValid() const;
 
     /**
-     * Returns a CRTC that drives this output.
+     * Returns the corresponding frame buffer object.
      */
-    DrmCrtc* crtc() const;
+    DrmBuffer* buffer() const;
 
 private:
-    DrmConnector* m_connector = nullptr;
-    DrmCrtc* m_crtc = nullptr;
+    /**
+     * Returns whether this image is currently being used.
+     */
+    bool isBusy() const;
 
-    Q_DISABLE_COPY(NativeOutput)
+    /**
+     * Sets the busy status.
+     */
+    void setBusy(bool busy);
+
+    DrmBuffer* m_buffer = nullptr;
+    gbm_bo* m_bo = nullptr;
+    bool m_isBusy = false;
+
+    friend class DrmSwapchain;
 };

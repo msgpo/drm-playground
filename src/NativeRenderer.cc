@@ -34,12 +34,12 @@ bool NativeRenderer::isValid() const
     return true;
 }
 
-void NativeRenderer::beginFrame(NativeOutput* output)
+void NativeRenderer::beginFrame(DrmOutput* output)
 {
     Q_UNUSED(output)
 }
 
-void NativeRenderer::finishFrame(NativeOutput* output, const QRegion& damaged)
+void NativeRenderer::finishFrame(DrmOutput* output, const QRegion& damaged)
 {
     Q_UNUSED(output)
     Q_UNUSED(damaged)

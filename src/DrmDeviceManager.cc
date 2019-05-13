@@ -49,6 +49,9 @@ DrmDeviceManager::DrmDeviceManager(NativeContext* context, QObject* parent)
         if (!dev->isValid())
             continue;
 
+        if (!dev->enable(DrmDevice::ClientCapabilityUniversalPlanes))
+            return;
+
         if (!dev->enable(DrmDevice::ClientCapabilityAtomic))
             continue;
 
@@ -116,6 +119,9 @@ void DrmDeviceManager::add(const UdevDevice& device)
         return;
 
     if (!dev->supports(DrmDevice::DeviceCapabilityImportBuffer))
+        return;
+
+    if (!dev->enable(DrmDevice::ClientCapabilityUniversalPlanes))
         return;
 
     if (!dev->enable(DrmDevice::ClientCapabilityAtomic))

@@ -16,36 +16,45 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#pragma once
+#include "DrmOutput.h"
+#include "DrmConnector.h"
+#include "DrmSwapchain.h"
 
-#include "globals.h"
+DrmOutput::DrmOutput(DrmConnector* connector, QObject* parent)
+    : QObject(parent)
+    , m_connector(connector)
+    , m_device(connector->device())
+{
+}
 
-#include <QObject>
+DrmOutput::~DrmOutput()
+{
+    delete m_swapchain;
+}
 
-class NativeRenderer : public QObject {
-    Q_OBJECT
+DrmDevice* DrmOutput::device() const
+{
+    return m_device;
+}
 
-public:
-    explicit NativeRenderer(DrmDevice* device, QObject* parent = nullptr);
-    ~NativeRenderer() override;
+DrmConnector* DrmOutput::connector() const
+{
+    return m_connector;
+}
 
-    /**
-     * Whether this renderer was initiliazed successfully.
-     */
-    bool isValid() const;
+DrmCrtc* DrmOutput::crtc() const
+{
+    return m_crtc;
+}
 
-    /**
-     * Marks the beginning of rendering of a frame.
-     */
-    void beginFrame(DrmOutput* output);
+DrmSwapchain* DrmOutput::swapchain() const
+{
+    return m_swapchain;
+}
 
-    /**
-     * Finalizes the rendering of the frame.
-     */
-    void finishFrame(DrmOutput* output, const QRegion& damaged);
+void DrmOutput::createSwapchain()
+{
+    delete m_swapchain;
 
-private:
-    DrmDevice* m_device;
-
-    Q_DISABLE_COPY(NativeRenderer)
-};
+    // TODO: Actually create the swapchain.
+}

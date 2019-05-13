@@ -22,30 +22,40 @@
 
 #include <QObject>
 
-class NativeRenderer : public QObject {
+class DrmOutput : public QObject {
     Q_OBJECT
 
 public:
-    explicit NativeRenderer(DrmDevice* device, QObject* parent = nullptr);
-    ~NativeRenderer() override;
+    DrmOutput(DrmConnector* connector, QObject* parent = nullptr);
+    ~DrmOutput() override;
 
     /**
-     * Whether this renderer was initiliazed successfully.
+     * Returns a DRM device this output connected to.
      */
-    bool isValid() const;
+    DrmDevice* device() const;
 
     /**
-     * Marks the beginning of rendering of a frame.
+     * Returns connector this output attached to.
      */
-    void beginFrame(DrmOutput* output);
+    DrmConnector* connector() const;
 
     /**
-     * Finalizes the rendering of the frame.
+     * Returns a CRTC that drives this output.
      */
-    void finishFrame(DrmOutput* output, const QRegion& damaged);
+    DrmCrtc* crtc() const;
+
+    /**
+     * Returns the swapchain of this output.
+     */
+    DrmSwapchain* swapchain() const;
 
 private:
-    DrmDevice* m_device;
+    void createSwapchain();
 
-    Q_DISABLE_COPY(NativeRenderer)
+    DrmConnector* m_connector = nullptr;
+    DrmCrtc* m_crtc = nullptr;
+    DrmDevice* m_device = nullptr;
+    DrmSwapchain* m_swapchain = nullptr;
+
+    Q_DISABLE_COPY(DrmOutput)
 };
