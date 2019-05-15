@@ -49,6 +49,16 @@ public:
      */
     DrmSwapchain* swapchain() const;
 
+    /**
+     * Returns whether this output is enabled.
+     */
+    bool isEnabled() const;
+
+    /**
+     * Enables or disables this output.
+     */
+    void setEnabled(bool enabled);
+
 private:
     void createSwapchain();
 
@@ -56,6 +66,7 @@ private:
     DrmCrtc* m_crtc = nullptr;
     DrmDevice* m_device = nullptr;
     DrmSwapchain* m_swapchain = nullptr;
+    bool m_isEnabled = false;
 
     Q_DISABLE_COPY(DrmOutput)
 };

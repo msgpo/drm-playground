@@ -34,6 +34,16 @@ DrmSwapchain::~DrmSwapchain()
     qDeleteAll(m_images);
 }
 
+bool DrmSwapchain::isValid() const
+{
+    for (DrmImage* image : m_images) {
+        if (!image->isValid())
+            return false;
+    }
+
+    return true;
+}
+
 int DrmSwapchain::depth() const
 {
     return m_images.count();

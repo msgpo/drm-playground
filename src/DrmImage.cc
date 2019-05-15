@@ -62,6 +62,11 @@ DrmBuffer* DrmImage::buffer() const
     return m_buffer;
 }
 
+void DrmImage::release()
+{
+    m_isBusy = false;
+}
+
 bool DrmImage::isBusy() const
 {
     return m_isBusy;

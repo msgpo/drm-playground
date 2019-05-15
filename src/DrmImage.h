@@ -37,6 +37,11 @@ public:
      */
     DrmBuffer* buffer() const;
 
+    /**
+     * Puts this image back to the swapchain.
+     */
+    void release();
+
 private:
     /**
      * Returns whether this image is currently being used.

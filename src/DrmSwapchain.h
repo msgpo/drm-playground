@@ -20,14 +20,16 @@
 
 #include "globals.h"
 
-#include <QSize>
-#include <QVector>
-
 class DrmSwapchain {
 public:
     DrmSwapchain(DrmDevice* device, uint32_t width, uint32_t height,
         uint32_t format, const QVector<uint64_t>& modifiers);
     ~DrmSwapchain();
+
+    /**
+     * Returns whether this swapchain is valid.
+     */
+    bool isValid() const;
 
     /**
      * Returns the number of images in this swapchain.

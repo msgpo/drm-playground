@@ -53,6 +53,16 @@ DrmSwapchain* DrmOutput::swapchain() const
     return m_swapchain;
 }
 
+bool DrmOutput::isEnabled() const
+{
+    return m_isEnabled;
+}
+
+void DrmOutput::setEnabled(bool enabled)
+{
+    m_isEnabled = enabled;
+}
+
 void DrmOutput::createSwapchain()
 {
     delete m_swapchain;

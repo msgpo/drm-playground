@@ -19,6 +19,7 @@
 #include "DrmDevice.h"
 #include "DrmConnector.h"
 #include "DrmCrtc.h"
+#include "DrmOutput.h"
 #include "DrmPlane.h"
 #include "DrmPointer.h"
 #include "NativeContext.h"
@@ -209,10 +210,15 @@ void DrmDevice::scanConnectors()
         connectors << connector.release();
     }
 
-    const DrmConnectorSet gone = m_connectors.toSet() - connectors.toSet();
-    qDeleteAll(gone);
-
+    const DrmConnectorSet previousConnectors = m_connectors.toSet();
+    const DrmConnectorSet currentConnectors = connectors.toSet();
     m_connectors = connectors;
+
+    const DrmConnectorSet added = currentConnectors - previousConnectors;
+    const DrmConnectorSet removed = previousConnectors - currentConnectors;
+
+    Q_UNUSED(added)
+    Q_UNUSED(removed)
 
     emit connectorsChanged();
 }
@@ -277,30 +283,29 @@ static bool findConfiguration(MatchContext& context, int depth = 0)
 
 void DrmDevice::reroute()
 {
-    DrmConnectorList connectors = m_connectors;
-    DrmCrtcList crtcs = m_crtcs;
+    MatchContext context;
 
-    // Move connectors that have assigned CRTC to the front.
-    std::partition(connectors.begin(), connectors.end(),
-        [](const DrmConnector* connector) { return connector->crtc(); });
+    context.crtcs = m_crtcs;
+    context.taken.resize(m_crtcs.count());
+
+    for (DrmOutput* output : m_outputs) {
+        if (!output->isEnabled())
+            continue;
+        context.connectors << output->connector();
+    }
 
     // Make sure that we prefer existing associations.
-    for (int i = 0; i < connectors.count(); ++i) {
-        const DrmConnector* connector = connectors.at(i);
+    for (int i = 0; i < context.connectors.count(); ++i) {
+        const DrmConnector* connector = context.connectors[i];
         if (!connector->crtc())
             continue;
 
-        const int j = crtcs.indexOf(connector->crtc());
+        const int j = context.crtcs.indexOf(connector->crtc());
         if (i == j)
             continue;
 
-        std::swap(crtcs[i], crtcs[j]);
+        std::swap(context.crtcs[i], context.crtcs[j]);
     }
-
-    MatchContext context;
-    context.connectors = connectors;
-    context.crtcs = crtcs;
-    context.taken.resize(crtcs.count());
 
     if (!findConfiguration(context))
         return;
