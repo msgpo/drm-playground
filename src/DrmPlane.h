@@ -22,6 +22,20 @@
 
 #include <QVector>
 
+struct PlaneProperties {
+    // All drivers should provide these properties.
+    uint32_t crtcX = 0;
+    uint32_t crtcY = 0;
+    uint32_t crtcWidth = 0;
+    uint32_t crtcHeight = 0;
+    uint32_t crtcId = 0;
+    uint32_t frameBufferId = 0;
+    uint32_t srcX = 0;
+    uint32_t srcY = 0;
+    uint32_t srcWidth = 0;
+    uint32_t srcHeight = 0;
+};
+
 class DrmPlane : public DrmObject {
 public:
     DrmPlane(DrmDevice* device, uint32_t id);
@@ -38,6 +52,11 @@ public:
     DrmCrtc* crtc() const;
 
     /**
+     * Assigns this plane to the given CRTC.
+     */
+    void setCrtc(DrmCrtc* crtc);
+
+    /**
      * Returns a list of possible CRTCs this plane can be attached to.
      */
     DrmCrtcList possibleCrtcs() const;
@@ -52,26 +71,17 @@ public:
      */
     QVector<uint64_t> modifiers(uint32_t format) const;
 
+    /**
+     *
+     */
+    PlaneProperties properties() const;
+
 private:
     PlaneType m_type;
+    PlaneProperties m_properties;
     DrmCrtcList m_possibleCrtcs;
     DrmCrtc* m_crtc;
 
     QVector<uint32_t> m_formats;
     QVector<drm_format_modifier> m_modifiers;
-
-    struct {
-        uint32_t crtcX = 0;
-        uint32_t crtcY = 0;
-        uint32_t crtcWidth = 0;
-        uint32_t crtcHeight = 0;
-
-        uint32_t crtcId = 0;
-        uint32_t frameBufferId = 0;
-
-        uint32_t srcX = 0;
-        uint32_t srcY = 0;
-        uint32_t srcWidth = 0;
-        uint32_t srcHeight = 0;
-    } m_properties;
 };

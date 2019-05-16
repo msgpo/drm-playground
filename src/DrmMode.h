@@ -54,7 +54,7 @@ public:
     drmModeModeInfo data() const;
 
 private:
-    bool m_preferred = false;
+    bool m_isPreferred = false;
     uint32_t m_width = 0;
     uint32_t m_height = 0;
     uint32_t m_refreshRate = 0;

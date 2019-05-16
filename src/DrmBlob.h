@@ -20,26 +20,22 @@
 
 #include "globals.h"
 
-#include <QObject>
-
-class DrmAllocator : public QObject {
-    Q_OBJECT
-
+class DrmBlob {
 public:
-    explicit DrmAllocator(QObject* parent = nullptr);
-    ~DrmAllocator() override;
+    DrmBlob(DrmDevice* device, const void* data, size_t size);
+    ~DrmBlob();
 
     /**
-     * Returns whether this allocator is valid.
+     * Returns whether this blob object is valid.
      */
-    virtual bool isValid() const = 0;
+    bool isValid() const;
 
     /**
-     * Allocates an image.
+     * Returns the id of this blob.
      */
-    virtual DrmImage* allocate(uint32_t width, uint32_t height, uint32_t format,
-        const QVector<uint64_t>& modifiers) = 0;
+    uint32_t id() const;
 
 private:
-    Q_DISABLE_COPY(DrmAllocator)
+    DrmDevice* m_device;
+    uint32_t m_id;
 };

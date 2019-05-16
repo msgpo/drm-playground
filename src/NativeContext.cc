@@ -17,6 +17,8 @@
  */
 
 #include "NativeContext.h"
+#include "DrmDeviceManager.h"
+#include "DrmOutputManager.h"
 #include "session/LogindSessionController.h"
 #include "udev/UdevContext.h"
 
@@ -30,19 +32,43 @@ NativeContext::NativeContext(QObject* parent)
     m_sessionController = new LogindSessionController(this);
     if (!m_sessionController->isValid())
         return;
+
+    m_deviceManager = new DrmDeviceManager(this);
+    if (!m_deviceManager->isValid())
+        return;
+
+    m_outputManager = new DrmOutputManager(this);
+    if (!m_outputManager->isValid())
+        return;
 }
 
 NativeContext::~NativeContext()
 {
+    delete m_outputManager;
+    delete m_deviceManager;
 }
 
 bool NativeContext::isValid() const
 {
-    if (!m_udev || !m_udev->isValid())
+    if (!m_udev->isValid())
         return false;
-    if (!m_sessionController || !m_sessionController->isValid())
+    if (!m_sessionController->isValid())
+        return false;
+    if (!m_deviceManager->isValid())
+        return false;
+    if (!m_outputManager->isValid())
         return false;
     return true;
+}
+
+DrmDeviceManager* NativeContext::deviceManager() const
+{
+    return m_deviceManager;
+}
+
+DrmOutputManager* NativeContext::outputManager() const
+{
+    return m_outputManager;
 }
 
 SessionController* NativeContext::sessionController() const
@@ -53,4 +79,9 @@ SessionController* NativeContext::sessionController() const
 UdevContext* NativeContext::udev() const
 {
     return m_udev.get();
+}
+
+AllocatorType NativeContext::allocatorType() const
+{
+    return m_allocatorType;
 }

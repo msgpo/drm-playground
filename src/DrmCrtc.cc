@@ -79,12 +79,27 @@ DrmPlane* DrmCrtc::primaryPlane() const
     return m_primaryPlane;
 }
 
+void DrmCrtc::setPrimaryPlane(DrmPlane* plane)
+{
+    m_primaryPlane = plane;
+}
+
 DrmPlane* DrmCrtc::cursorPlane() const
 {
     return m_cursorPlane;
 }
 
+void DrmCrtc::setCursorPlane(DrmPlane* plane)
+{
+    m_cursorPlane = plane;
+}
+
 uint32_t DrmCrtc::pipe() const
 {
     return m_pipe;
+}
+
+CrtcProperties DrmCrtc::properties() const
+{
+    return m_properties;
 }

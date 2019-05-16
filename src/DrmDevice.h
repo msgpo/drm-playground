@@ -37,6 +37,10 @@ public:
      */
     enum DeviceCapability {
         /**
+         * This device supports dumb buffers.
+         */
+        DeviceCapabilityDumbBuffer,
+        /**
          * This device can export buffers over dma-buf.
          */
         DeviceCapabilityExportBuffer,
@@ -95,6 +99,11 @@ public:
     QString path() const;
 
     /**
+     * Returns context associated with this device.
+     */
+    NativeContext* context() const;
+
+    /**
      * Returns the device memory allocator.
      */
     DrmAllocator* allocator() const;
@@ -144,15 +153,52 @@ public:
     DrmOutputList outputs() const;
 
     /**
+     * Returns an output with the given connector.
+     */
+    DrmOutput* findOutput(const DrmConnector* connector) const;
+
+    /**
+     * Returns an output that is driven by the given CRTC.
+     */
+    DrmOutput* findOutput(const DrmCrtc* crtc) const;
+
+    /**
+     * Returns an output that is driven by the given CRTC.
+     */
+    DrmOutput* findOutput(uint32_t crtcId) const;
+
+    /**
      * Returns the renderer.
      **/
     NativeRenderer* renderer() const;
 
-signals:
     /**
-     * Emitted when a connector is connected or disconnected.
+     * Returns whether this device is frozen.
      */
-    void connectorsChanged();
+    bool isFrozen() const;
+
+    /**
+     * Freezes the device.
+     */
+    void freeze();
+
+    /**
+     * Unfreezes the device.
+     */
+    void thaw();
+
+    /**
+     * Returns whether this device is currently idle.
+     */
+    bool isIdle() const;
+
+    /**
+     * Waits until this device becomes idle.
+     */
+    void waitIdle();
+
+private slots:
+    void dispatchEvents();
 
 private:
     void scanConnectors();
@@ -169,6 +215,8 @@ private:
     DrmOutputList m_outputs;
     QString m_path;
     int m_fd = -1;
+    int m_freezeCounter = 0;
+    bool m_supportsDumbBuffer = false;
     bool m_supportsExportBuffer = false;
     bool m_supportsImportBuffer = false;
     bool m_supportsBufferModifier = false;

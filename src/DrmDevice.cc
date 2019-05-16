@@ -19,13 +19,19 @@
 #include "DrmDevice.h"
 #include "DrmConnector.h"
 #include "DrmCrtc.h"
+#include "DrmDumbAllocator.h"
+#include "DrmGbmAllocator.h"
+#include "DrmImage.h"
 #include "DrmOutput.h"
+#include "DrmOutputManager.h"
 #include "DrmPlane.h"
 #include "DrmPointer.h"
 #include "NativeContext.h"
 #include "session/SessionController.h"
 
 #include <QBitArray>
+#include <QCoreApplication>
+#include <QSocketNotifier>
 
 #include <xf86drm.h>
 
@@ -53,9 +59,25 @@ DrmDevice::DrmDevice(NativeContext* context, const QString& path, QObject* paren
     if (!resources)
         return;
 
+    m_supportsDumbBuffer = queryCapability(m_fd, DRM_CAP_DUMB_BUFFER);
     m_supportsExportBuffer = queryCapability(m_fd, DRM_CAP_PRIME) & DRM_PRIME_CAP_EXPORT;
     m_supportsImportBuffer = queryCapability(m_fd, DRM_CAP_PRIME) & DRM_PRIME_CAP_IMPORT;
     m_supportsBufferModifier = queryCapability(m_fd, DRM_CAP_ADDFB2_MODIFIERS);
+
+    switch (m_context->allocatorType()) {
+    case AllocatorDumb:
+        m_allocator = new DrmDumbAllocator(this);
+        break;
+    case AllocatorGbm:
+        m_allocator = new DrmGbmAllocator(this);
+        break;
+    }
+
+    if (!m_allocator->isValid())
+        return;
+
+    auto notifier = new QSocketNotifier(m_fd, QSocketNotifier::Read, this);
+    connect(notifier, &QSocketNotifier::activated, this, &DrmDevice::dispatchEvents);
 
     m_isValid = true;
 }
@@ -67,6 +89,8 @@ DrmDevice::~DrmDevice()
     qDeleteAll(m_crtcs);
     qDeleteAll(m_connectors);
 
+    delete m_allocator;
+
     if (m_fd != -1)
         m_context->sessionController()->closeRestricted(m_fd);
 }
@@ -74,6 +98,8 @@ DrmDevice::~DrmDevice()
 bool DrmDevice::supports(DeviceCapability capability) const
 {
     switch (capability) {
+    case DeviceCapabilityDumbBuffer:
+        return m_supportsDumbBuffer;
     case DeviceCapabilityExportBuffer:
         return m_supportsExportBuffer;
     case DeviceCapabilityImportBuffer:
@@ -110,6 +136,11 @@ int DrmDevice::fd() const
 QString DrmDevice::path() const
 {
     return m_path;
+}
+
+NativeContext* DrmDevice::context() const
+{
+    return m_context;
 }
 
 DrmAllocator* DrmDevice::allocator() const
@@ -182,9 +213,118 @@ DrmOutputList DrmDevice::outputs() const
     return m_outputs;
 }
 
+DrmOutput* DrmDevice::findOutput(const DrmConnector* connector) const
+{
+    for (DrmOutput* output : m_outputs) {
+        if (output->connector() == connector)
+            return output;
+    }
+
+    return nullptr;
+}
+
+DrmOutput* DrmDevice::findOutput(const DrmCrtc* crtc) const
+{
+    return findOutput(crtc->id());
+}
+
+DrmOutput* DrmDevice::findOutput(uint32_t crtcId) const
+{
+    for (DrmOutput* output : m_outputs) {
+        DrmCrtc* crtc = output->crtc();
+        if (!crtc)
+            continue;
+        if (crtc->id() == crtcId)
+            return output;
+    }
+
+    return nullptr;
+}
+
 NativeRenderer* DrmDevice::renderer() const
 {
     return m_renderer;
+}
+
+bool DrmDevice::isFrozen() const
+{
+    return m_freezeCounter;
+}
+
+void DrmDevice::freeze()
+{
+    m_freezeCounter++;
+}
+
+void DrmDevice::thaw()
+{
+    m_freezeCounter--;
+}
+
+bool DrmDevice::isIdle() const
+{
+    for (DrmOutput* output : m_outputs) {
+        if (output->pendingImage())
+            return false;
+    }
+
+    return true;
+}
+
+void DrmDevice::waitIdle()
+{
+    freeze();
+
+    while (!isIdle())
+        QCoreApplication::processEvents();
+
+    thaw();
+}
+
+static std::chrono::nanoseconds makeTimestamp(uint tv_sec, uint tv_usec)
+{
+    const auto seconds = std::chrono::seconds(tv_sec);
+    const auto nanoseconds = std::chrono::nanoseconds(tv_usec * 1000);
+    return seconds + nanoseconds;
+}
+
+static void deviceEventHandler(int,
+    unsigned int sequence,
+    unsigned int tv_sec,
+    unsigned int tv_usec,
+    unsigned int crtc_id,
+    void* user_data)
+{
+    DrmDevice* device = static_cast<DrmDevice*>(user_data);
+
+    DrmOutput* output = device->findOutput(crtc_id);
+    if (!output)
+        return;
+
+    DrmImage* image = output->pendingImage();
+    image->release();
+
+    output->setPendingImage(nullptr);
+    output->setSequence(sequence);
+    output->setTimestamp(makeTimestamp(tv_sec, tv_usec));
+
+    if (device->isFrozen())
+        return;
+
+    const NativeContext* context = device->context();
+    if (!context->sessionController()->isActive())
+        return;
+
+    // TODO: Notify Compositor.
+}
+
+void DrmDevice::dispatchEvents()
+{
+    drmEventContext context = {};
+    context.version = 3;
+    context.page_flip_handler2 = deviceEventHandler;
+
+    drmHandleEvent(m_fd, &context);
 }
 
 void DrmDevice::scanConnectors()
@@ -217,10 +357,15 @@ void DrmDevice::scanConnectors()
     const DrmConnectorSet added = currentConnectors - previousConnectors;
     const DrmConnectorSet removed = previousConnectors - currentConnectors;
 
-    Q_UNUSED(added)
+    for (DrmConnector* connector : added) {
+        DrmOutput* output = new DrmOutput(connector, this);
+        m_context->outputManager()->prepare(output);
+        m_outputs << output;
+    }
+
     Q_UNUSED(removed)
 
-    emit connectorsChanged();
+    reroute();
 }
 
 void DrmDevice::scanCrtcs()
@@ -233,6 +378,25 @@ void DrmDevice::scanCrtcs()
         m_crtcs << new DrmCrtc(this, resources->crtcs[i], i);
 }
 
+static DrmPlane* findSpecialPlane(DrmCrtc* crtc, PlaneType type)
+{
+    const DrmDevice* device = crtc->device();
+    const DrmPlaneList planes = device->planes(type);
+
+    for (DrmPlane* plane : planes) {
+        if (plane->crtc() && plane->crtc() == crtc)
+            return plane;
+
+        if (plane->crtc())
+            continue;
+
+        if (plane->possibleCrtcs().contains(crtc))
+            return plane;
+    }
+
+    return nullptr;
+}
+
 void DrmDevice::scanPlanes()
 {
     DrmScopedPointer<drmModePlaneRes> resources(drmModeGetPlaneResources(m_fd));
@@ -241,6 +405,18 @@ void DrmDevice::scanPlanes()
 
     for (uint32_t i = 0; i < resources->count_planes; ++i)
         m_planes << new DrmPlane(this, resources->planes[i]);
+
+    for (DrmCrtc* crtc : m_crtcs) {
+        if (DrmPlane* plane = findSpecialPlane(crtc, PlanePrimary)) {
+            plane->setCrtc(crtc);
+            crtc->setPrimaryPlane(plane);
+        }
+
+        if (DrmPlane* plane = findSpecialPlane(crtc, PlaneCursor)) {
+            plane->setCrtc(crtc);
+            crtc->setCursorPlane(plane);
+        }
+    }
 }
 
 struct MatchContext {
@@ -253,7 +429,7 @@ struct MatchContext {
 static bool testConfiguration(const MatchContext& context)
 {
     Q_UNUSED(context)
-    return false;
+    return true;
 }
 
 static bool findConfiguration(MatchContext& context, int depth = 0)
@@ -309,4 +485,21 @@ void DrmDevice::reroute()
 
     if (!findConfiguration(context))
         return;
+
+    for (DrmConnector* connector : context.connectors) {
+        DrmCrtc* crtc = context.configuration.value(connector);
+
+        DrmOutput* previousOutput = findOutput(crtc);
+        DrmOutput* currentOutput = findOutput(connector);
+
+        if (previousOutput) {
+            previousOutput->destroySwapchain();
+            previousOutput->setCrtc(nullptr);
+            previousOutput->setNeedsModeset(true);
+        }
+
+        currentOutput->setCrtc(crtc);
+        currentOutput->createSwapchain();
+        currentOutput->setNeedsModeset(true);
+    }
 }

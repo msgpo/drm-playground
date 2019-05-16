@@ -17,7 +17,6 @@
  */
 
 #include "DrmBackend.h"
-#include "DrmDeviceManager.h"
 #include "NativeContext.h"
 
 DrmBackend::DrmBackend(QObject* parent)
@@ -26,22 +25,16 @@ DrmBackend::DrmBackend(QObject* parent)
     m_context = new NativeContext(this);
     if (!m_context->isValid())
         return;
-
-    m_deviceManager = new DrmDeviceManager(m_context, this);
 }
 
 DrmBackend::~DrmBackend()
 {
-    // TODO: Maybe move DrmDeviceManager up to NativeContext?
-    delete m_deviceManager;
     delete m_context;
 }
 
 bool DrmBackend::isValid() const
 {
     if (!m_context->isValid())
-        return false;
-    if (!m_deviceManager->isValid())
         return false;
     return true;
 }

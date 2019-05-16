@@ -18,28 +18,24 @@
 
 #pragma once
 
-#include "globals.h"
+#include "DrmAllocator.h"
 
-#include <QObject>
+#include <gbm.h>
 
-class DrmAllocator : public QObject {
+class DrmGbmAllocator : public DrmAllocator {
     Q_OBJECT
 
 public:
-    explicit DrmAllocator(QObject* parent = nullptr);
-    ~DrmAllocator() override;
+    explicit DrmGbmAllocator(DrmDevice* device, QObject* parent = nullptr);
+    ~DrmGbmAllocator() override;
 
-    /**
-     * Returns whether this allocator is valid.
-     */
-    virtual bool isValid() const = 0;
-
-    /**
-     * Allocates an image.
-     */
-    virtual DrmImage* allocate(uint32_t width, uint32_t height, uint32_t format,
-        const QVector<uint64_t>& modifiers) = 0;
+    bool isValid() const override;
+    DrmImage* allocate(uint32_t width, uint32_t height, uint32_t format,
+        const QVector<uint64_t>& modifiers) override;
 
 private:
-    Q_DISABLE_COPY(DrmAllocator)
+    DrmDevice* m_device = nullptr;
+    gbm_device* m_gbm = nullptr;
+
+    Q_DISABLE_COPY(DrmGbmAllocator)
 };

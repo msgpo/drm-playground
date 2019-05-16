@@ -17,49 +17,14 @@
  */
 
 #include "DrmImage.h"
-#include "DrmBuffer.h"
-#include "DrmDevice.h"
-
-#include <drm_fourcc.h>
-
-DrmImage::DrmImage(DrmDevice* device, gbm_bo* bo)
-    : m_bo(bo)
-{
-    const uint32_t width = gbm_bo_get_width(m_bo);
-    const uint32_t height = gbm_bo_get_height(m_bo);
-    const uint32_t format = gbm_bo_get_format(m_bo);
-
-    std::array<uint32_t, 4> handles = { 0 };
-    std::array<uint32_t, 4> strides = { 0 };
-    std::array<uint32_t, 4> offsets = { 0 };
-    std::array<uint64_t, 4> modifiers = { 0 };
-
-    const int planeCount = gbm_bo_get_plane_count(m_bo);
-    for (int i = 0; i < planeCount; ++i) {
-        handles[i] = gbm_bo_get_handle_for_plane(m_bo, i).u32;
-        strides[i] = gbm_bo_get_stride_for_plane(m_bo, i);
-        offsets[i] = gbm_bo_get_offset(m_bo, i);
-        modifiers[i] = gbm_bo_get_modifier(m_bo);
-    }
-
-    m_buffer = DrmBuffer::create(device, width, height, format, handles, strides,
-        offsets, modifiers);
-}
 
 DrmImage::~DrmImage()
 {
-    delete m_buffer;
-    gbm_bo_destroy(m_bo);
 }
 
 bool DrmImage::isValid() const
 {
-    return m_buffer;
-}
-
-DrmBuffer* DrmImage::buffer() const
-{
-    return m_buffer;
+    return buffer();
 }
 
 void DrmImage::release()

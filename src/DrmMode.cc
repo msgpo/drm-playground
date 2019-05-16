@@ -38,12 +38,17 @@ static uint32_t computeRefreshRate(const drmModeModeInfo& mode)
 DrmMode::DrmMode() = default;
 
 DrmMode::DrmMode(const drmModeModeInfo& mode)
-    : m_preferred(mode.type & DRM_MODE_TYPE_PREFERRED)
+    : m_isPreferred(mode.type & DRM_MODE_TYPE_PREFERRED)
     , m_width(mode.hdisplay)
     , m_height(mode.vdisplay)
     , m_refreshRate(computeRefreshRate(mode))
     , m_data(mode)
 {
+}
+
+bool DrmMode::isPreferred() const
+{
+    return m_isPreferred;
 }
 
 uint32_t DrmMode::width() const

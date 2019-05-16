@@ -16,30 +16,30 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#pragma once
+#include "DrmBlob.h"
+#include "DrmDevice.h"
 
-#include "globals.h"
+#include <xf86drmMode.h>
 
-#include <QObject>
+DrmBlob::DrmBlob(DrmDevice* device, const void* data, size_t size)
+    : m_device(device)
+    , m_id(0)
+{
+    drmModeCreatePropertyBlob(device->fd(), data, size, &m_id);
+}
 
-class DrmAllocator : public QObject {
-    Q_OBJECT
+DrmBlob::~DrmBlob()
+{
+    if (m_id)
+        drmModeDestroyPropertyBlob(m_device->fd(), m_id);
+}
 
-public:
-    explicit DrmAllocator(QObject* parent = nullptr);
-    ~DrmAllocator() override;
+bool DrmBlob::isValid() const
+{
+    return m_id;
+}
 
-    /**
-     * Returns whether this allocator is valid.
-     */
-    virtual bool isValid() const = 0;
-
-    /**
-     * Allocates an image.
-     */
-    virtual DrmImage* allocate(uint32_t width, uint32_t height, uint32_t format,
-        const QVector<uint64_t>& modifiers) = 0;
-
-private:
-    Q_DISABLE_COPY(DrmAllocator)
-};
+uint32_t DrmBlob::id() const
+{
+    return m_id;
+}

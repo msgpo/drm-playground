@@ -16,30 +16,32 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#pragma once
+#include "DrmDumbAllocator.h"
+#include "DrmDevice.h"
+#include "DrmDumbImage.h"
 
-#include "globals.h"
+DrmDumbAllocator::DrmDumbAllocator(DrmDevice* device, QObject* parent)
+    : DrmAllocator(parent)
+    , m_device(device)
+    , m_isValid(device->supports(DrmDevice::DeviceCapabilityDumbBuffer))
+{
+}
 
-#include <QObject>
+DrmDumbAllocator::~DrmDumbAllocator()
+{
+}
 
-class DrmAllocator : public QObject {
-    Q_OBJECT
+bool DrmDumbAllocator::isValid() const
+{
+    return m_isValid;
+}
 
-public:
-    explicit DrmAllocator(QObject* parent = nullptr);
-    ~DrmAllocator() override;
-
-    /**
-     * Returns whether this allocator is valid.
-     */
-    virtual bool isValid() const = 0;
-
-    /**
-     * Allocates an image.
-     */
-    virtual DrmImage* allocate(uint32_t width, uint32_t height, uint32_t format,
-        const QVector<uint64_t>& modifiers) = 0;
-
-private:
-    Q_DISABLE_COPY(DrmAllocator)
-};
+DrmImage* DrmDumbAllocator::allocate(uint32_t width, uint32_t height, uint32_t format,
+    const QVector<uint64_t>& modifiers)
+{
+    Q_UNUSED(width)
+    Q_UNUSED(height)
+    Q_UNUSED(format)
+    Q_UNUSED(modifiers)
+    return nullptr;
+}

@@ -16,30 +16,29 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#pragma once
+#include "DrmOutputManager.h"
+#include "DrmConnector.h"
+#include "DrmOutput.h"
 
-#include "globals.h"
+DrmOutputManager::DrmOutputManager(QObject* parent)
+    : QObject(parent)
+{
+}
 
-#include <QObject>
+DrmOutputManager::~DrmOutputManager()
+{
+}
 
-class DrmAllocator : public QObject {
-    Q_OBJECT
+bool DrmOutputManager::isValid() const
+{
+    return true;
+}
 
-public:
-    explicit DrmAllocator(QObject* parent = nullptr);
-    ~DrmAllocator() override;
+void DrmOutputManager::prepare(DrmOutput* output)
+{
+    const DrmConnector* connector = output->connector();
 
-    /**
-     * Returns whether this allocator is valid.
-     */
-    virtual bool isValid() const = 0;
-
-    /**
-     * Allocates an image.
-     */
-    virtual DrmImage* allocate(uint32_t width, uint32_t height, uint32_t format,
-        const QVector<uint64_t>& modifiers) = 0;
-
-private:
-    Q_DISABLE_COPY(DrmAllocator)
-};
+    output->setDesiredMode(connector->preferredMode());
+    output->setEnabled(true);
+    output->setNeedsModeset(true);
+}

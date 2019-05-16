@@ -18,28 +18,20 @@
 
 #pragma once
 
-#include "globals.h"
-
 #include <QObject>
 
-class DrmAllocator : public QObject {
+class Scene : public QObject {
     Q_OBJECT
 
 public:
-    explicit DrmAllocator(QObject* parent = nullptr);
-    ~DrmAllocator() override;
+    explicit Scene(QObject* parent = nullptr);
+    ~Scene() override;
 
     /**
-     * Returns whether this allocator is valid.
+     * Returns whether the scene is valid.
      */
-    virtual bool isValid() const = 0;
-
-    /**
-     * Allocates an image.
-     */
-    virtual DrmImage* allocate(uint32_t width, uint32_t height, uint32_t format,
-        const QVector<uint64_t>& modifiers) = 0;
+    bool isValid() const;
 
 private:
-    Q_DISABLE_COPY(DrmAllocator)
+    Q_DISABLE_COPY(Scene)
 };

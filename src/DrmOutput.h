@@ -20,7 +20,11 @@
 
 #include "globals.h"
 
+#include "DrmMode.h"
+
 #include <QObject>
+
+#include <memory>
 
 class DrmOutput : public QObject {
     Q_OBJECT
@@ -45,9 +49,34 @@ public:
     DrmCrtc* crtc() const;
 
     /**
+     * Sets CRTC that drives this output.
+     */
+    void setCrtc(DrmCrtc* crtc);
+
+    /**
      * Returns the swapchain of this output.
      */
     DrmSwapchain* swapchain() const;
+
+    /**
+     *
+     */
+    uint sequence() const;
+
+    /**
+     *
+     */
+    void setSequence(uint sequence);
+
+    /**
+     *
+     */
+    std::chrono::nanoseconds timestamp() const;
+
+    /**
+     *
+     */
+    void setTimestamp(const std::chrono::nanoseconds& timestamp);
 
     /**
      * Returns whether this output is enabled.
@@ -59,14 +88,58 @@ public:
      */
     void setEnabled(bool enabled);
 
+    /**
+     * Returns whether this output needs a modeset.
+     */
+    bool needsModeset() const;
+
+    /**
+     * Sets whether this output needs to perform modesetting.
+     */
+    void setNeedsModeset(bool set);
+
+    /**
+     * Returns the desired mode.
+     */
+    DrmMode desiredMode() const;
+
+    /**
+     * Sets the desired mode.
+     */
+    void setDesiredMode(const DrmMode& mode);
+
+    /**
+     * Returns image about to be presented.
+     */
+    DrmImage* pendingImage() const;
+
+    /**
+     * Sets an image about to be presented.
+     */
+    void setPendingImage(DrmImage* image);
+
+    /**
+     *
+     */
+    void present();
+
 private:
     void createSwapchain();
+    void destroySwapchain();
 
+    DrmMode m_desiredMode;
     DrmConnector* m_connector = nullptr;
     DrmCrtc* m_crtc = nullptr;
     DrmDevice* m_device = nullptr;
     DrmSwapchain* m_swapchain = nullptr;
+    DrmImage* m_pendingImage = nullptr;
+    std::unique_ptr<DrmBlob> m_modeBlob;
+    std::chrono::nanoseconds m_timestamp;
+    uint m_sequence = 0;
     bool m_isEnabled = false;
+    bool m_needsModeset = false;
+
+    friend class DrmDevice;
 
     Q_DISABLE_COPY(DrmOutput)
 };

@@ -17,40 +17,12 @@
  */
 
 #include "DrmAllocator.h"
-#include "DrmDevice.h"
-#include "DrmImage.h"
 
-#include <QVector>
-
-DrmAllocator::DrmAllocator(DrmDevice* device, QObject* parent)
+DrmAllocator::DrmAllocator(QObject* parent)
     : QObject(parent)
-    , m_device(device)
-    , m_gbm(gbm_create_device(device->fd()))
 {
 }
 
 DrmAllocator::~DrmAllocator()
 {
-    if (m_gbm)
-        gbm_device_destroy(m_gbm);
-}
-
-bool DrmAllocator::isValid() const
-{
-    return m_gbm;
-}
-
-DrmImage* DrmAllocator::allocate(uint32_t width, uint32_t height, uint32_t format,
-    const QVector<uint64_t>& modifiers)
-{
-    // TODO: Without modifiers.
-
-    gbm_bo* bo = nullptr;
-    if (!modifiers.isEmpty())
-        bo = gbm_bo_create_with_modifiers(m_gbm, width, height, format, modifiers.data(), modifiers.count());
-
-    if (!bo)
-        return nullptr;
-
-    return new DrmImage(m_device, bo);
 }

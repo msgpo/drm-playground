@@ -18,10 +18,14 @@
 
 #pragma once
 
+#include "globals.h"
+
 #include <QObject>
 
 #include <memory>
 
+class DrmDeviceManager;
+class DrmOutputManager;
 class SessionController;
 class UdevContext;
 
@@ -38,6 +42,16 @@ public:
     bool isValid() const;
 
     /**
+     * Returns the DRM device manager.
+     */
+    DrmDeviceManager* deviceManager() const;
+
+    /**
+     * Returns the output manager.
+     */
+    DrmOutputManager* outputManager() const;
+
+    /**
      * Returns the session controller.
      */
     SessionController* sessionController() const;
@@ -47,9 +61,17 @@ public:
      */
     UdevContext* udev() const;
 
+    /**
+     * Returns desired buffer allocator.
+     */
+    AllocatorType allocatorType() const;
+
 private:
+    DrmDeviceManager* m_deviceManager = nullptr;
+    DrmOutputManager* m_outputManager = nullptr;
     SessionController* m_sessionController = nullptr;
     std::unique_ptr<UdevContext> m_udev;
+    AllocatorType m_allocatorType = AllocatorGbm;
 
     Q_DISABLE_COPY(NativeContext)
 };

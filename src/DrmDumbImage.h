@@ -1,3 +1,4 @@
+
 /*
  * Copyright (C) 2019 Vlad Zagorodniy <vladzzag@gmail.com>
  *
@@ -18,28 +19,16 @@
 
 #pragma once
 
-#include "globals.h"
+#include "DrmImage.h"
 
-#include <QObject>
-
-class DrmAllocator : public QObject {
-    Q_OBJECT
-
+class DrmDumbImage : public DrmImage {
 public:
-    explicit DrmAllocator(QObject* parent = nullptr);
-    ~DrmAllocator() override;
+    ~DrmDumbImage() override;
 
-    /**
-     * Returns whether this allocator is valid.
-     */
-    virtual bool isValid() const = 0;
-
-    /**
-     * Allocates an image.
-     */
-    virtual DrmImage* allocate(uint32_t width, uint32_t height, uint32_t format,
-        const QVector<uint64_t>& modifiers) = 0;
+    DrmBuffer* buffer() const override;
 
 private:
-    Q_DISABLE_COPY(DrmAllocator)
+    DrmBuffer* m_buffer = nullptr;
+
+    Q_DISABLE_COPY(DrmDumbImage)
 };

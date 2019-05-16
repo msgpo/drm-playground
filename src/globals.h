@@ -23,6 +23,7 @@
 #include <QSet>
 
 class DrmAllocator;
+class DrmBlob;
 class DrmBuffer;
 class DrmConnector;
 class DrmCrtc;
@@ -44,6 +45,11 @@ typedef QList<DrmPlane*> DrmPlaneList;
 typedef QMap<DrmConnector*, DrmCrtc*> DrmCrtcMap;
 
 typedef QSet<DrmConnector*> DrmConnectorSet;
+
+enum AllocatorType {
+    AllocatorDumb,
+    AllocatorGbm
+};
 
 enum Dpms {
     DpmsOn,

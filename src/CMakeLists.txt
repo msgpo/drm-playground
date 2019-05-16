@@ -7,17 +7,26 @@ add_executable(playground
     udev/UdevEnumerator.cc
     udev/UdevMonitor.cc
 
+    Compositor.cc
+    Scene.cc
+
     DrmAllocator.cc
     DrmBackend.cc
+    DrmBlob.cc
     DrmBuffer.cc
     DrmConnector.cc
     DrmCrtc.cc
     DrmDevice.cc
     DrmDeviceManager.cc
+    DrmDumbAllocator.cc
+    DrmDumbImage.cc
+    DrmGbmAllocator.cc
+    DrmGbmImage.cc
     DrmImage.cc
     DrmMode.cc
     DrmObject.cc
     DrmOutput.cc
+    DrmOutputManager.cc
     DrmPlane.cc
     DrmSwapchain.cc
     EDID.cc

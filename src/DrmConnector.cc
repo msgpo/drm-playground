@@ -196,6 +196,16 @@ DrmModeList DrmConnector::modes() const
     return m_modes;
 }
 
+DrmMode DrmConnector::preferredMode() const
+{
+    for (const DrmMode& mode : m_modes) {
+        if (mode.isPreferred())
+            return mode;
+    }
+
+    return m_modes.first();
+}
+
 DrmCrtc* DrmConnector::crtc() const
 {
     return m_crtc;
@@ -204,4 +214,9 @@ DrmCrtc* DrmConnector::crtc() const
 DrmCrtcList DrmConnector::possibleCrtcs() const
 {
     return m_possibleCrtcs;
+}
+
+ConnectorProperties DrmConnector::properties() const
+{
+    return m_properties;
 }

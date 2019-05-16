@@ -21,6 +21,17 @@
 #include "DrmMode.h"
 #include "DrmObject.h"
 
+struct CrtcProperties {
+    // All drivers should provide these properties.
+    uint32_t active = 0;
+    uint32_t modeId = 0;
+
+    // Optional properties, not all drivers provide them.
+    uint32_t rotation = 0;
+    uint32_t degammaTable = 0;
+    uint32_t gammaTable = 0;
+};
+
 class DrmCrtc : public DrmObject {
 public:
     DrmCrtc(DrmDevice* device, uint32_t id, uint32_t pipe);
@@ -55,24 +66,31 @@ public:
     DrmPlane* primaryPlane() const;
 
     /**
+     * Sets the primary plane.
+     */
+    void setPrimaryPlane(DrmPlane* plane);
+
+    /**
      * Returns the cursor plane.
      *
      * If there is no such a plane, @c null is returned.
      */
     DrmPlane* cursorPlane() const;
 
+    /**
+     * Sets the cursor plane.
+     */
+    void setCursorPlane(DrmPlane* plane);
+
+    /**
+     *
+     */
+    CrtcProperties properties() const;
+
 private:
+    CrtcProperties m_properties;
     DrmMode m_mode;
     DrmPlane* m_primaryPlane = nullptr;
     DrmPlane* m_cursorPlane = nullptr;
     uint32_t m_pipe;
-
-    struct {
-        uint32_t active = 0;
-        uint32_t modeId = 0;
-
-        uint32_t rotation = 0;
-        uint32_t degammaTable = 0;
-        uint32_t gammaTable = 0;
-    } m_properties;
 };

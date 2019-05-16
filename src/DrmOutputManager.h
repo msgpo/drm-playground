@@ -22,24 +22,23 @@
 
 #include <QObject>
 
-class DrmAllocator : public QObject {
+class DrmOutputManager : public QObject {
     Q_OBJECT
 
 public:
-    explicit DrmAllocator(QObject* parent = nullptr);
-    ~DrmAllocator() override;
+    explicit DrmOutputManager(QObject* parent = nullptr);
+    ~DrmOutputManager() override;
 
     /**
-     * Returns whether this allocator is valid.
+     * Returns whether this output manager is valid.
      */
-    virtual bool isValid() const = 0;
+    bool isValid() const;
 
     /**
-     * Allocates an image.
+     * Prepares the initial state of the given output.
      */
-    virtual DrmImage* allocate(uint32_t width, uint32_t height, uint32_t format,
-        const QVector<uint64_t>& modifiers) = 0;
+    void prepare(DrmOutput* output);
 
 private:
-    Q_DISABLE_COPY(DrmAllocator)
+    Q_DISABLE_COPY(DrmOutputManager)
 };

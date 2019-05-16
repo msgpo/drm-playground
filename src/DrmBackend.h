@@ -22,7 +22,6 @@
 
 #include <QObject>
 
-class DrmDeviceManager;
 class NativeContext;
 
 class DrmBackend : public QObject {
@@ -39,7 +38,6 @@ public:
 
 private:
     NativeContext* m_context;
-    DrmDeviceManager* m_deviceManager;
 
     Q_DISABLE_COPY(DrmBackend)
 };

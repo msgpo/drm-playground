@@ -162,6 +162,11 @@ DrmCrtc* DrmPlane::crtc() const
     return m_crtc;
 }
 
+void DrmPlane::setCrtc(DrmCrtc* crtc)
+{
+    m_crtc = crtc;
+}
+
 DrmCrtcList DrmPlane::possibleCrtcs() const
 {
     return m_possibleCrtcs;
@@ -186,4 +191,9 @@ QVector<uint64_t> DrmPlane::modifiers(uint32_t format) const
     }
 
     return modifiers;
+}
+
+PlaneProperties DrmPlane::properties() const
+{
+    return m_properties;
 }

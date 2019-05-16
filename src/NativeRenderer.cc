@@ -18,6 +18,7 @@
 
 #include "NativeRenderer.h"
 #include "DrmDevice.h"
+#include "DrmOutput.h"
 
 NativeRenderer::NativeRenderer(DrmDevice* device, QObject* parent)
     : QObject(parent)
@@ -37,10 +38,13 @@ bool NativeRenderer::isValid() const
 void NativeRenderer::beginFrame(DrmOutput* output)
 {
     Q_UNUSED(output)
+    // DrmImage* image = output->swapchain()->acquire();
+    // output->setPendingImage(image);
 }
 
 void NativeRenderer::finishFrame(DrmOutput* output, const QRegion& damaged)
 {
     Q_UNUSED(output)
     Q_UNUSED(damaged)
+    // output->present();
 }

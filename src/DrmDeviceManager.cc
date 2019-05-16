@@ -81,6 +81,12 @@ DrmDeviceManager::DrmDeviceManager(NativeContext* context, QObject* parent)
 
 DrmDeviceManager::~DrmDeviceManager()
 {
+    for (DrmDevice* device : m_devices)
+        device->freeze();
+
+    for (DrmDevice* device : m_devices)
+        device->waitIdle();
+
     qDeleteAll(m_devices);
 }
 
@@ -151,8 +157,12 @@ void DrmDeviceManager::reload(const UdevDevice& device)
     if (!(device.types() & UdevDevice::Gpu))
         return;
 
-    if (DrmDevice* dev = findDevice(device))
-        dev->scanConnectors();
+    DrmDevice* dev = findDevice(device);
+    if (!dev)
+        return;
+
+    dev->waitIdle();
+    dev->scanConnectors();
 }
 
 DrmDevice* DrmDeviceManager::findDevice(const UdevDevice& udev)

@@ -16,30 +16,18 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#pragma once
+#include "Compositor.h"
 
-#include "globals.h"
+Compositor::Compositor(QObject* parent)
+    : QObject(parent)
+{
+}
 
-#include <QObject>
+Compositor::~Compositor()
+{
+}
 
-class DrmAllocator : public QObject {
-    Q_OBJECT
-
-public:
-    explicit DrmAllocator(QObject* parent = nullptr);
-    ~DrmAllocator() override;
-
-    /**
-     * Returns whether this allocator is valid.
-     */
-    virtual bool isValid() const = 0;
-
-    /**
-     * Allocates an image.
-     */
-    virtual DrmImage* allocate(uint32_t width, uint32_t height, uint32_t format,
-        const QVector<uint64_t>& modifiers) = 0;
-
-private:
-    Q_DISABLE_COPY(DrmAllocator)
-};
+bool Compositor::isValid() const
+{
+    return true;
+}

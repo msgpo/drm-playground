@@ -24,6 +24,12 @@
 
 class EDID;
 
+struct ConnectorProperties {
+    // All drivers should provide these properties.
+    uint32_t crtcId = 0;
+    uint32_t dpms = 0;
+};
+
 class DrmConnector : public DrmObject {
 public:
     DrmConnector(DrmDevice* device, uint32_t id);
@@ -52,6 +58,11 @@ public:
     DrmModeList modes() const;
 
     /**
+     * Returns preferred mode for this connector.
+     */
+    DrmMode preferredMode() const;
+
+    /**
      * Returns CRTC that currently drives this connector.
      */
     DrmCrtc* crtc() const;
@@ -61,16 +72,17 @@ public:
      */
     DrmCrtcList possibleCrtcs() const;
 
+    /**
+     *
+     */
+    ConnectorProperties properties() const;
+
 private:
+    ConnectorProperties m_properties;
     DrmModeList m_modes;
     DrmCrtcList m_possibleCrtcs;
     DrmCrtc* m_crtc = nullptr;
     std::unique_ptr<EDID> m_edid;
     QString m_name;
     bool m_isOnline = false;
-
-    struct {
-        uint32_t crtcId = 0;
-        uint32_t dpms = 0;
-    } m_properties;
 };

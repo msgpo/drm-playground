@@ -20,12 +20,9 @@
 
 #include "globals.h"
 
-#include <gbm.h>
-
 class DrmImage {
 public:
-    DrmImage(DrmDevice* device, gbm_bo* bo);
-    ~DrmImage();
+    virtual ~DrmImage();
 
     /**
      * Returns whether this image is valid.
@@ -35,7 +32,7 @@ public:
     /**
      * Returns the corresponding frame buffer object.
      */
-    DrmBuffer* buffer() const;
+    virtual DrmBuffer* buffer() const = 0;
 
     /**
      * Puts this image back to the swapchain.
@@ -53,8 +50,6 @@ private:
      */
     void setBusy(bool busy);
 
-    DrmBuffer* m_buffer = nullptr;
-    gbm_bo* m_bo = nullptr;
     bool m_isBusy = false;
 
     friend class DrmSwapchain;
